@@ -15,6 +15,49 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    
+    const animatedElements = document.querySelectorAll('.fade-in-card, .section-title-animated');
+    // Définissez les options pour l'observateur (quand déclencher l'animation)
+    const observerOptions = {
+        root: null, // On observe par rapport à la fenêtre du navigateur (le viewport)
+        rootMargin: '0px',
+        threshold: 0.1 // Déclenche l'animation dès que 10% de l'élément est visible
+    };
+    
+    // Définissez ce qui se passe quand un élément entre dans la vue
+    const observerCallback = (entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Si l'élément est visible, ajoutez la classe 'visible'
+                entry.target.classList.add('visible');
+                // Arrêtez d'observer cet élément pour ne pas redéclencher l'animation
+                observer.unobserve(entry.target);
+            }
+        });
+    };
+    
+    // Créez l'observateur en utilisant la fonction et les options définies
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    
+    // Observez chaque élément de notre liste
+    animatedElements.forEach(element => {
+        observer.observe(element);
+    });
+    
+    // --- Votre autre code JavaScript (e.g., bouton "Retour en haut", etc.) va ici ---
+    // --- C'est important de le mettre à l'intérieur de 'DOMContentLoaded' ---
+    
+
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > scrollThreshold) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+    }
+
 
     // --- 2. Animation d'apparition des cartes au scroll (avec Intersection Observer) ---
     // C'est plus performant que l'écouteur d'événement 'scroll'
@@ -90,6 +133,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Gérer les erreurs réseau (ex: pas de connexion internet)
                 console.error('Erreur lors de l\'envoi du formulaire:', error);
                 formMessage.innerHTML = `<div class="alert alert-danger" role="alert">Une erreur réseau est survenue. Veuillez vérifier votre connexion.</div>`;
+            }
+        });
+    }
+
+    // --- 6. Bouton Retour en Haut au scroll ---
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    // Définissez le seuil de défilement (en pixels) avant que le bouton n'apparaisse
+    const scrollThreshold = 300;
+
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            // Si l'utilisateur a défilé plus que le seuil, affichez le bouton
+            if (window.scrollY > scrollThreshold) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                // Sinon, cachez le bouton
+                backToTopBtn.classList.remove('visible');
             }
         });
     }

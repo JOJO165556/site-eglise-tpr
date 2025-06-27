@@ -255,6 +255,20 @@ h1, h2, h3, .display-4, .display-5 {
     transform: scale(1.1); /* Zoom sur l'icône au survol */
 }
 
+/* Style pour les cartes qui sont aussi des liens */
+.card-link {
+    /* 1. Élimine le soulignement par défaut des liens */
+    text-decoration: none; 
+
+    /* 2. Empêche le texte de devenir bleu (couleur par défaut d'un lien) */
+    /* Le texte héritera de la couleur de son conteneur parent (blanc) */
+    color: inherit; 
+
+    /* 3. Fait en sorte que le lien couvre toute la zone de la carte */
+    display: block; 
+    height: 100%; 
+}
+
 /* ====================================
    Carrousel (nouveau)
    ==================================== */
@@ -466,4 +480,119 @@ h1, h2, h3, .display-4, .display-5 {
 .fade-in-card.visible {
     opacity: 1; /* Devient complètement visible */
     transform: translateY(0); /* Remonte à sa position normale */
+}
+
+/* ====================================
+   Bouton Retour en Haut
+   ==================================== */
+.back-to-top-btn {
+    position: fixed; /* Reste visible même en défilant */
+    bottom: 30px;    /* 30 pixels du bas */
+    right: 30px;     /* 30 pixels de la droite */
+    z-index: 1000;   /* S'assure qu'il est toujours au-dessus des autres éléments */
+    background-color: var(--secondary-color); /* Utilise votre couleur secondaire (jaune/orange) */
+    color: var(--text-light-color); /* Texte ou icône blanc */
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* Crée un bouton rond */
+    display: flex; /* Utilise Flexbox pour centrer l'icône */
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    opacity: 0;       /* C'est ce qui le cache par défaut */
+    visibility: hidden; /* L'empêche d'être cliquable quand il est caché */
+    transition: all 0.3s ease-in-out; /* Ajoute une transition douce pour l'apparition */
+}
+
+/* Règle pour afficher le bouton (via JavaScript) */
+.back-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Effet de survol */
+.back-to-top-btn:hover {
+    transform: translateY(-5px); /* Se soulève légèrement */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ====================================
+   Style des cartes de programme
+   ==================================== */
+
+.schedule-card {
+    background-color: var(--card-bg-color, #ffffff); /* Utilise une couleur de fond pour les cartes */
+    border: 1px solid var(--border-color, #e0e0e0);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Effet de survol pour donner vie aux cartes */
+.schedule-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-card .icon-service {
+    color: var(--primary-color); /* Utilise la couleur principale pour les icônes */
+}
+
+/* ====================================
+   Animations des titres de section
+   ==================================== */
+
+/* État initial du titre : il est caché et décalé vers le bas */
+.section-title-animated {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 1s ease-out, transform 1s ease-out; /* Transition douce */
+}
+
+/* État final du titre : il devient visible et revient à sa position normale */
+/* La classe 'visible' sera ajoutée automatiquement par le JavaScript */
+.section-title-animated.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ====================================
+   Style du Footer et de la carte
+   ==================================== */
+.footer-section {
+    background-color: var(--bg-dark-color);
+    color: var(--text-light-color);
+}
+
+.footer-section h4 {
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+}
+
+.footer-list {
+    padding-left: 0;
+}
+
+.footer-list li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-link {
+    color: var(--text-light-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: var(--secondary-color);
+}
+
+.footer-address p {
+    margin-bottom: 0.5rem;
+}
+
+.map-container iframe {
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
