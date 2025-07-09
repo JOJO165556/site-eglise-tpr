@@ -1,5 +1,20 @@
 // Attente du chargement complet du DOM avant d'exécuter le script
 document.addEventListener('DOMContentLoaded', () => {
+    // ==================== 0. Effet texte automatique (machine à écrire) ====================
+    const text = "BIENVENUE DANS LA MAISON DU SEIGNEUR...";
+    const target = document.getElementById("autoText");
+    let index = 0;
+
+    if (target) {
+        function typeWriter() {
+            if (index < text.length) {
+                target.innerHTML += text.charAt(index);
+                index++;
+                setTimeout(typeWriter, 100); // vitesse (ms)
+            }
+        }
+        setTimeout(typeWriter, 1000); // synchronisé avec l'animation delay
+    }
 
     // ==================== 1. Défilement doux (Smooth Scroll) ====================
     // Applique un défilement fluide à tous les liens qui pointent vers une section de la page
