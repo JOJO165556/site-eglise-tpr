@@ -1,0 +1,313 @@
+:root {
+    --primary-color: #1a73e8; 
+    --secondary-color: #ffc107; 
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+    --main-font: "Montserrat", sans-serif;
+    --secondary-font: "Merriweather", serif;
+}
+
+body {
+    font-family: var(--main-font);
+    color: var(--dark-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--secondary-font);
+    color: var(--primary-color);
+}
+
+.section-padding {
+    padding: 80px 0;
+}
+
+.text-dark-primary {
+    color: var(--primary-color) !important;
+}
+
+.btn-custom-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-custom-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.btn-outline-secondary {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+/* --- Barre de navigation --- */
+.main-header {
+    background-color: #fff;
+    padding: 15px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.main-header .navbar-nav .nav-link {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--dark-color);
+    transition: color 0.3s ease;
+}
+
+.main-header .navbar-nav .nav-link:hover {
+    color: var(--primary-color);
+}
+
+.logo-img {
+    height: 85px;
+    width: auto;
+    border-radius: 50%;
+}
+
+/* --- Page d'accueil - section principale --- */
+.hero-section {
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+    text-align: center;
+    padding: 100px 0;
+}
+
+/* --- Styles pour les sections d'accueil --- */
+.icon-section {
+    text-align: center;
+}
+
+.icon-section h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 20px;
+}
+
+.image-gallery img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.image-gallery img:hover {
+    transform: scale(1.05);
+}
+
+/* Styles pour le carrousel de la galerie */
+.carousel-image {
+    height: 700px; 
+    object-fit: contain; 
+}
+
+/* Rend les boutons du carrousel toujours visibles */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+}
+
+/* --- Page Jeunesse --- */
+.card {
+    border: 1px solid #e0e0e0;
+}
+
+.card-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+/* Ajustement spécifique pour l'image de louange */
+.image-louange {
+    object-position: bottom;
+}
+
+/* Diaporama d'images */
+.slider-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+    margin-top: 5rem;
+}
+
+.slider-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.slider-image.active {
+    opacity: 1;
+}
+
+/* Grille du calendrier */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.calendar-day {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: background-color 0.2s;
+    font-weight: bold;
+}
+
+.day-header {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #333;
+}
+
+.calendar-day:not(.day-header):hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.future-event {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-color: #badbcc;
+}
+
+.past-event {
+    background-color: #f8d7da;
+    color: #58151c;
+    border-color: #f5c2c7;
+}
+
+.event-with-details {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Cartes Quiz et Pensée du jour */
+.quiz-card, .quote-card {
+    border: none;
+    border-radius: 15px;
+}
+
+.quote-card {
+    background-color: #f8f9fa;
+    border-left: 5px solid var(--primary-color);
+}
+
+.quote-content {
+    position: relative;
+    padding: 20px 0;
+}
+
+.quote-icon {
+    font-size: 2rem;
+    color: rgba(0,0,0,0.1);
+    position: absolute;
+    top: 5px;
+}
+
+.fa-quote-left {
+    left: 10px;
+}
+
+.fa-quote-right {
+    right: 10px;
+}
+
+.quote-text {
+    font-style: italic;
+    padding: 0 40px;
+    text-align: center;
+}
+
+/* Espace supplémentaire pour éviter que le menu ne cache le contenu */
+#accueil,
+#sections,
+#calendrier,
+#affiches,
+#quiz-and-quotes,
+#galerie,
+#contact {
+    scroll-margin-top: 150px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+}

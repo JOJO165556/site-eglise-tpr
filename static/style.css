@@ -39,9 +39,15 @@ h1, h2, h3, .display-4, .display-5 {
     color: var(--text-light-color) !important;
 }
 
+.logo-img {
+    height: 150px; 
+    width: auto;
+}
+
 .navbar-nav .nav-link {
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.5rem; 
     font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
     transition: color 0.3s ease;
 }
 
