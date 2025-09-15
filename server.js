@@ -49,6 +49,9 @@ const server = http.createServer(async (req, res) => {
                     case "/entretien":
                         await renderHtml(res, "entretien.html");
                         break;
+                    case "/telecommunication": 
+                        await renderHtml(res, "telecommunication.html");
+                        break;
                     case "/confirmation-paiement":
                         await renderHtml(res, "confirmation-paiement.html");
                         break;

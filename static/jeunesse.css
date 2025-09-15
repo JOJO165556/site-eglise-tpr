@@ -177,56 +177,67 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
 }
 
-/* Grille du calendrier */
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+/* Styles du calendrier */
+.calendar-cards {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.calendar-header {
+  font-weight: bold;
+  text-align: center;
+  padding: 10px 0;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 5px;
 }
 
 .calendar-day {
-    padding: 10px;
-    text-align: center;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    min-height: 50px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    transition: background-color 0.2s;
-    font-weight: bold;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 100px;
 }
 
-.day-header {
-    background-color: #f8f9fa;
-    font-weight: bold;
-    color: #333;
+.calendar-day:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
 }
 
-.calendar-day:not(.day-header):hover {
-    background-color: #f0f0f0;
-    cursor: pointer;
+.calendar-day.empty {
+  background-color: transparent;
+  border: none;
 }
 
-.future-event {
-    background-color: #d1e7dd;
-    color: #0f5132;
-    border-color: #badbcc;
+.day-number {
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
-.past-event {
-    background-color: #f8d7da;
-    color: #58151c;
-    border-color: #f5c2c7;
+.event-icon {
+  color: var(--tertiary-color);
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }
 
-.event-with-details {
-    position: relative;
-    cursor: pointer;
+.has-event {
+  background-color: var(--light-bg);
+  border-color: var(--primary-color);
+}
+
+/* Style pour la date du jour */
+.calendar-day.today {
+    border: 3px solid var(--primary-color) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Cartes Quiz et Pensée du jour */

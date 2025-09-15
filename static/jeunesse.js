@@ -1,241 +1,276 @@
-// Données pour le calendrier
-const events = {
-    "2025-08-31": {
-        title: "Séminaire jeunesse",
-        description: "Thème : Le jeune chrétien face aux défis du 21ᵉ siècle. Lieu : Hôtel Muget de 08h00 à 18h00.",
-        link: "https://www.youtube.com/@emissionstaparev3801"
+// Données de l'agenda
+const events = [
+    {
+        date: '2025-09-07',
+        title: 'Culte dominical',
+        description: 'Service de louange et prédication.',
+        link: '#',
     },
-    "2025-10-15": {
-        title: "Rencontre de Prière",
-        description: "Rejoignez-nous pour un moment de prière et d'adoration intense.",
-        link: "#"
+    {
+        date: '2025-09-14',
+        title: 'Culte dominical',
+        description: 'Service de louange et prédication.',
+        link: '#',
     },
-    "2025-10-25": {
-        title: "Service de la jeunesse",
-        description: "Le culte sera entièrement animé par les jeunes, venez nombreux !",
-        link: "#"
+    {
+        date: '2025-09-28',
+        title: 'Réunion mensuelle de la jeunesse',
+        description: 'Le dernier dimanche du mois, nous nous retrouvons pour prier et partager.',
+        link: '#',
+    },
+    {
+        date: '2025-10-05',
+        title: 'Culte dominical',
+        description: 'Service de louange et prédication.',
+        link: '#',
+    },
+    {
+        date: '2025-10-26',
+        title: 'Réunion mensuelle de la jeunesse',
+        description: 'Le dernier dimanche du mois, nous nous retrouvons pour prier et partager.',
+        link: '#',
+    },
+    {
+        date: '2025-11-02',
+        title: 'Culte dominical',
+        description: 'Service de louange et prédication.',
+        link: '#',
+    },
+    {
+        date: '2025-11-30',
+        title: 'Réunion mensuelle de la jeunesse',
+        description: 'Le dernier dimanche du mois, nous nous retrouvons pour prier et partager.',
+        link: '#',
+    },
+];
+
+// Pensées du jour
+const quotes = [
+    "La foi est une ferme assurance des choses qu'on espère, une démonstration de celles qu'on ne voit pas.",
+    "Tout ce que vous demandez avec foi par la prière, vous le recevrez.",
+    "Car là où deux ou trois sont assemblés en mon nom, je suis au milieu d'eux.",
+    "L'Éternel est mon berger : je ne manquerai de rien.",
+    "Ne vous inquiétez de rien; mais en toute chose faites connaître vos besoins à Dieu."
+];
+
+let currentDate = new Date();
+let currentQuestionIndex = 0;
+let quizQuestions = [];
+
+// Fonction pour le calendrier
+const renderCalendar = () => {
+    const calendarElement = document.getElementById('calendar');
+    calendarElement.innerHTML = '';
+    const monthLabel = document.getElementById('month-label');
+    const month = currentDate.getMonth();
+    const year = currentDate.getFullYear();
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    monthLabel.textContent = new Date(year, month).toLocaleString('fr-fr', { month: 'long', year: 'numeric' });
+
+    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    dayNames.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-header';
+        dayHeader.textContent = day;
+        calendarElement.appendChild(dayHeader);
+    });
+
+    for (let i = 0; i < firstDayOfMonth; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        calendarElement.appendChild(emptyDay);
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayCard = document.createElement('div');
+        dayCard.className = 'calendar-day card h-100 p-2 shadow-sm';
+
+        const fullDate = new Date(year, month, day);
+
+        const isToday = fullDate.getTime() === today.getTime();
+        if (isToday) {
+            dayCard.classList.add('today');
+        }
+
+        const dayNumber = document.createElement('h5');
+        dayNumber.className = 'card-title day-number';
+        dayNumber.textContent = day;
+        dayCard.appendChild(dayNumber);
+
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body p-0';
+        dayCard.appendChild(cardBody);
+        
+        const formattedDate = `${fullDate.getFullYear()}-${(fullDate.getMonth() + 1).toString().padStart(2, '0')}-${fullDate.getDate().toString().padStart(2, '0')}`;
+        const dayEvents = events.filter(event => event.date === formattedDate);
+
+        if (dayEvents.length > 0) {
+            if (fullDate < today) {
+                dayCard.classList.add('past-event');
+                const eventIcon = document.createElement('i');
+                eventIcon.className = 'fas fa-check event-icon past-icon';
+                dayCard.appendChild(eventIcon);
+            } else {
+                dayCard.classList.add('has-event');
+                const eventIcon = document.createElement('i');
+                eventIcon.className = 'fas fa-star event-icon';
+                dayCard.appendChild(eventIcon);
+            }
+            dayEvents.forEach(event => {
+                dayCard.addEventListener('click', () => {
+                    showEventModal(event);
+                });
+            });
+        }
+        calendarElement.appendChild(dayCard);
     }
 };
 
-// Données pour la pensée du jour
-const dailyQuotes = [
-    "Un jeune passionné par Christ n'est pas seulement l'avenir de l'Église, il est son présent.",
-    "Ta jeunesse est un cadeau de Dieu. Utilise-la pour le servir avec force et créativité !",
-    "L'enthousiasme de la jeunesse, la sagesse de la Parole : une combinaison invincible.",
-    "Ne te laisse pas décourager par le monde, mais sois une lumière qui brille pour Christ.",
-    "Le plus grand défi de la jeunesse chrétienne n'est pas de rester pur, mais de rester pertinent.",
-    "La foi ne te protège pas des tempêtes, elle t'apprend à danser sous la pluie.",
-    "Sois la personne que Dieu t'a appelé à être, pas celle que le monde veut que tu sois.",
-    "La vraie force vient de celui qui t'a créé. Appuie-toi sur lui chaque jour.",
-    "Ta vie est une histoire. Fais en sorte que chaque chapitre glorifie Dieu.",
-    "Le but de la jeunesse est de se trouver, mais le but du jeune chrétien est de se perdre en Christ."
-];
-
-let quizQuestions = [];
-let currentQuestionIndex = 0;
-const quizContainer = document.getElementById("quiz-container");
-const quizQuestionEl = document.getElementById("quiz-question");
-const quizOptionsEl = document.getElementById("quiz-options");
-const quizResultEl = document.getElementById("quiz-result");
-const nextQuestionBtn = document.getElementById("next-question-btn");
-
-// Fonction pour récupérer les questions du quiz depuis un fichier JSON
-async function fetchQuizQuestions() {
-    try {
-        const response = await fetch('/static/quizzes.json');
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP! Statut: ${response.status}`);
-        }
-        quizQuestions = await response.json();
-        loadQuizQuestion();
-    } catch (error) {
-        console.error("Erreur de chargement des questions:", error);
-        quizContainer.innerHTML = '<h5>Impossible de charger le quiz. Veuillez réessayer plus tard.</h5>';
-    }
-}
-
-// Fonction pour afficher une question
-function loadQuizQuestion() {
-    if (quizQuestions.length === 0) {
-        quizContainer.innerHTML = '<h5>Pas de questions disponibles pour le moment.</h5>';
-        return;
-    }
-    const currentQuestion = quizQuestions[currentQuestionIndex];
-    quizQuestionEl.textContent = currentQuestion.question;
-    quizOptionsEl.innerHTML = "";
-    quizResultEl.textContent = "";
-    nextQuestionBtn.style.display = 'none';
-
-    currentQuestion.options.forEach(option => {
-        const button = document.createElement("button");
-        button.textContent = option;
-        button.classList.add("btn", "btn-secondary", "my-2");
-        button.addEventListener("click", () => checkAnswer(option, currentQuestion.answer));
-        quizOptionsEl.appendChild(button);
-    });
-}
-
-// Fonction pour vérifier la réponse
-function checkAnswer(selectedOption, correctAnswer) {
-    const buttons = quizOptionsEl.querySelectorAll("button");
-    buttons.forEach(button => {
-        button.disabled = true;
-        if (button.textContent === correctAnswer) {
-            button.classList.add("btn-success");
-            button.classList.remove("btn-secondary");
-        } else if (button.textContent === selectedOption) {
-            button.classList.add("btn-danger");
-            button.classList.remove("btn-secondary");
-        }
-    });
-
-    if (selectedOption === correctAnswer) {
-        quizResultEl.textContent = "Bonne réponse ! 🎉";
-        quizResultEl.style.color = 'green';
-    } else {
-        quizResultEl.textContent = "Mauvaise réponse. Essayez encore ! 🤔";
-        quizResultEl.style.color = 'red';
-    }
-    nextQuestionBtn.style.display = 'block';
-}
-
-// Gestion du bouton "Question suivante"
-nextQuestionBtn.addEventListener('click', () => {
-    currentQuestionIndex++;
-    if (currentQuestionIndex < quizQuestions.length) {
-        loadQuizQuestion();
-    } else {
-        quizContainer.innerHTML = '<h5>Félicitations, vous avez terminé le quiz ! 🎉</h5>';
-        nextQuestionBtn.style.display = 'none';
-    }
-});
-
-let currentYear = new Date().getFullYear();
-let currentMonth = new Date().getMonth();
-
-function updateMonthLabel() {
-    const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-    document.getElementById("month-label").textContent = `${monthNames[currentMonth]} ${currentYear}`;
-}
-
-function changeMonth(offset) {
-    currentMonth += offset;
-    if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-    } else if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-    }
-    generateCalendar(currentYear, currentMonth);
-    updateMonthLabel();
-}
-
-function generateCalendar(year, month) {
-    const calendar = document.getElementById("calendar");
-    calendar.innerHTML = "";
-
-    const date = new Date(year, month, 1);
-    const today = new Date();
-    const firstDay = date.getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    const daysOfWeek = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-    daysOfWeek.forEach(day => {
-        const dayHeader = document.createElement("div");
-        dayHeader.classList.add("calendar-day", "day-header");
-        dayHeader.textContent = day;
-        calendar.appendChild(dayHeader);
-    });
-
-    for (let i = 0; i < firstDay; i++) {
-        const emptyDiv = document.createElement("div");
-        calendar.appendChild(emptyDiv);
-    }
-
-    for (let i = 1; i <= daysInMonth; i++) {
-        const dayDate = new Date(year, month, i);
-        const dayKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-        const dayDiv = document.createElement("div");
-        dayDiv.classList.add("calendar-day");
-        dayDiv.textContent = i;
-
-        if (events[dayKey]) {
-            if (dayDate < today) {
-                dayDiv.classList.add("past-event");
-            } else {
-                dayDiv.classList.add("future-event");
-            }
-            dayDiv.classList.add("event-with-details");
-            dayDiv.addEventListener("click", () => showEventModal(dayKey));
-        }
-
-        calendar.appendChild(dayDiv);
-    }
-}
-
-function showEventModal(dateKey) {
-    const event = events[dateKey];
-    if (!event) return;
-
-    const modal = document.getElementById("eventModal");
-    document.getElementById("modal-title").textContent = event.title;
-    document.getElementById("modal-date").textContent = new Date(dateKey).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById("modal-description").textContent = event.description;
-
-    const modalLink = document.getElementById("modal-link");
+const showEventModal = (event) => {
+    const modal = document.getElementById('eventModal');
+    document.getElementById('modal-title').textContent = event.title;
+    document.getElementById('modal-date').textContent = new Date(event.date).toLocaleDateString('fr-fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('modal-description').textContent = event.description;
+    const modalLink = document.getElementById('modal-link');
     if (event.link && event.link !== '#') {
         modalLink.href = event.link;
         modalLink.style.display = 'inline-block';
     } else {
         modalLink.style.display = 'none';
     }
+    modal.style.display = 'block';
+};
 
-    modal.style.display = "block";
+const hideEventModal = () => {
+    const modal = document.getElementById('eventModal');
+    modal.style.display = 'none';
+};
+
+const modal = document.getElementById('eventModal');
+const closeBtn = document.getElementsByClassName('close-btn')[0];
+if (closeBtn) {
+    closeBtn.onclick = hideEventModal;
 }
+window.onclick = (event) => {
+    if (event.target == modal) {
+        hideEventModal();
+    }
+};
 
-// Fonction pour gérer le diaporama d'images
-function startSlider() {
-    const images = document.querySelectorAll('.slider-image');
-    let currentIndex = 0;
+// Fonctions pour changer de mois
+const changeMonth = (direction) => {
+    currentDate.setMonth(currentDate.getMonth() + direction);
+    renderCalendar();
+};
 
-    setInterval(() => {
-        images[currentIndex].classList.remove('active');
-        currentIndex = (currentIndex + 1) % images.length;
-        images[currentIndex].classList.add('active');
-    }, 5000);
-}
+window.changeMonth = changeMonth;
 
-// Fonction pour afficher la pensée du jour
-function showDailyQuote() {
-    const today = new Date();
-    const start = new Date(today.getFullYear(), 0, 0);
-    const diff = today - start;
-    const oneDay = 1000 * 60 * 60 * 24;
-    const dayOfYear = Math.floor(diff / oneDay);
+// Fonction pour le slider d'images
+const sliderImages = document.querySelectorAll('.slider-image');
+let currentSlide = 0;
 
-    const quoteIndex = dayOfYear % dailyQuotes.length;
-    document.getElementById('daily-quote').textContent = dailyQuotes[quoteIndex];
-}
+const nextSlide = () => {
+    sliderImages[currentSlide].classList.remove('active');
+    currentSlide = (currentSlide + 1) % sliderImages.length;
+    sliderImages[currentSlide].classList.add('active');
+};
 
-// Exécuter le code après le chargement complet de la page
-document.addEventListener('DOMContentLoaded', () => {
-    generateCalendar(currentYear, currentMonth);
-    updateMonthLabel();
-    fetchQuizQuestions();
-    startSlider();
-    showDailyQuote();
+setInterval(nextSlide, 5000);
 
-    const modal = document.getElementById("eventModal");
-    const closeBtn = document.querySelector(".close-btn");
+// Fonction pour le quiz
+const startQuiz = (questions) => {
+    if (questions && questions.length > 0) {
+        quizQuestions = questions;
+        document.getElementById('next-question-btn').style.display = 'none';
+        showQuestion();
+    } else {
+        console.error("Les questions du quiz n'ont pas pu être chargées.");
+    }
+};
 
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = "none";
+const showQuestion = () => {
+    const questionContainer = document.getElementById('quiz-question');
+    const optionsContainer = document.getElementById('quiz-options');
+    const resultContainer = document.getElementById('quiz-result');
+
+    questionContainer.textContent = quizQuestions[currentQuestionIndex].question;
+    optionsContainer.innerHTML = '';
+    resultContainer.textContent = '';
+
+    quizQuestions[currentQuestionIndex].options.forEach(option => {
+        const button = document.createElement('button');
+        button.className = 'btn btn-outline-secondary';
+        button.textContent = option;
+        button.onclick = () => checkAnswer(option);
+        optionsContainer.appendChild(button);
     });
+};
 
-    window.addEventListener('click', (event) => {
-        if (event.target == modal) {
-            modal.style.display = "none";
+const checkAnswer = (selectedOption) => {
+    const options = document.querySelectorAll('#quiz-options button');
+    const resultContainer = document.getElementById('quiz-result');
+    const nextButton = document.getElementById('next-question-btn');
+    const correctAnswer = quizQuestions[currentQuestionIndex].answer;
+
+    if (selectedOption === correctAnswer) {
+        resultContainer.textContent = "Correct ! 🎉";
+        resultContainer.style.color = 'green';
+    } else {
+        resultContainer.textContent = `Incorrect. La bonne réponse est : ${correctAnswer}`;
+        resultContainer.style.color = 'red';
+    }
+
+    options.forEach(button => {
+        button.disabled = true;
+        if (button.textContent === correctAnswer) {
+            button.classList.add('btn-success');
         }
     });
+
+    nextButton.style.display = 'block';
+};
+
+const nextQuestion = () => {
+    currentQuestionIndex = (currentQuestionIndex + 1) % quizQuestions.length;
+    showQuestion();
+};
+
+// Fonction pour la pensée du jour
+const displayDailyQuote = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const quoteIndex = today.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % quotes.length;
+    document.getElementById('daily-quote').textContent = quotes[quoteIndex];
+};
+
+// Initialisation du quiz et des événements
+document.addEventListener('DOMContentLoaded', () => {
+    renderCalendar();
+    displayDailyQuote();
+
+    fetch('quizzes.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            startQuiz(data);
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+            if (nextQuestionBtn) {
+                 nextQuestionBtn.addEventListener('click', nextQuestion);
+            }
+        })
+        .catch(error => {
+            console.error('Il y a eu un problème avec le chargement du quiz:', error);
+            const quizContainer = document.getElementById('quiz-container');
+            if (quizContainer) {
+                quizContainer.innerHTML = "<p>Désolé, le quiz n'a pas pu être chargé.</p>";
+            }
+        });
 });
