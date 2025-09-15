@@ -1,0 +1,49 @@
+/* Page Enfants */
+.children-hero {
+    background-color: #66b3ff; /* Un bleu doux et joyeux */
+    height: 300px;
+}
+
+.children-card {
+    border-radius: 15px;
+    border: none;
+    transition: transform 0.3s;
+}
+
+.children-card:hover {
+    transform: translateY(-10px);
+}
+
+.children-card .text-primary {
+    color: #ff66b3 !important; /* Un rose vif pour les icônes */
+}
+
+.children-badge {
+    background-color: #ff66b3 !important;
+}
+
+.children-list .list-group-item {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Animation pour les boutons de réponse */
+.quiz-option.btn-success {
+    animation: correct-answer-pulse 0.5s ease;
+}
+
+.quiz-option.btn-danger {
+    animation: wrong-answer-shake 0.5s ease;
+}
+
+@keyframes correct-answer-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes wrong-answer-shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}

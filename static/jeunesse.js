@@ -42,7 +42,7 @@ const nextQuestionBtn = document.getElementById("next-question-btn");
 // Fonction pour récupérer les questions du quiz depuis un fichier JSON
 async function fetchQuizQuestions() {
     try {
-        const response = await fetch('quizzes.json');
+        const response = await fetch('/static/quizzes.json');
         if (!response.ok) {
             throw new Error(`Erreur HTTP! Statut: ${response.status}`);
         }
