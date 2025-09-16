@@ -5,7 +5,8 @@ const serveStatic = require("serve-static");
 const axios = require("axios");
 const querystring = require('querystring');
 const nodemailer = require('nodemailer');
-const sqlite3 = require('sqlite3').verbose(); 
+// Correction : le nom de la variable ne doit pas contenir de tiret
+const Database = require('better-sqlite3');
 require("dotenv").config();
 const { URL } = require("url");
 
@@ -14,7 +15,6 @@ const API_KEY = process.env.FEDAPAY_API_KEY;
 
 const servePublic = serveStatic(path.join(__dirname, "static"));
 
-// La fonction toTitleCase doit être ici, en dehors des autres fonctions
 function toTitleCase(str) {
     if (!str) return '';
     return str.replace(/\w\S*/g, function(txt) {
@@ -37,36 +37,37 @@ async function renderHtml(res, file) {
 const server = http.createServer(async (req, res) => {
     servePublic(req, res, async () => {
         try {
-            // Utilisation correcte de l'objet URL
             const { pathname } = new URL(req.url, `http://${req.headers.host}`);
 
             if (req.method === "GET") {
                 switch (pathname) {
                     case "/":
-                        // La page d'accueil doit juste se charger.
-                        // Son script JS se chargera de récupérer le total des membres
                         await renderHtml(res, "index.html");
                         break;
                     
                     case "/members":
-                        // La page des membres doit juste se charger.
-                        // Son script JS va maintenant chercher les données via l'API.
                         await renderHtml(res, "members.html");
                         break;
                     
-                    // Votre route API est déjà correcte. Elle renvoie le JSON.
                     case "/api/members":
-                        const dbApi = new sqlite3.Database(path.resolve(__dirname, 'members.db'), sqlite3.OPEN_READONLY);
-                        dbApi.all("SELECT * FROM members ORDER BY name", [], (err, rows) => {
-                            dbApi.close();
-                            if (err) {
-                                res.writeHead(500, { "Content-Type": "application/json" });
-                                res.end(JSON.stringify({ error: err.message }));
-                                return;
-                            }
+                        let dbApi;
+                        try {
+                            // Initialisation de la base de données
+                            dbApi = new Database(path.resolve(__dirname, 'members.db'), { readonly: true });
+                            // Utilisation de la méthode synchrone
+                            const stmt = dbApi.prepare("SELECT * FROM members ORDER BY name");
+                            const rows = stmt.all();
+                            
                             res.writeHead(200, { "Content-Type": "application/json" });
                             res.end(JSON.stringify(rows));
-                        });
+                        } catch (err) {
+                            // Gestion des erreurs avec un try-catch
+                            res.writeHead(500, { "Content-Type": "application/json" });
+                            res.end(JSON.stringify({ error: err.message }));
+                        } finally {
+                            // Assurez-vous de toujours fermer la connexion
+                            if (dbApi) dbApi.close();
+                        }
                         break;
                         
                     case "/don":
@@ -100,7 +101,6 @@ const server = http.createServer(async (req, res) => {
                     body += chunk.toString();
                 });
                 req.on('end', async () => {
-                    // Correction de la ligne dans le gestionnaire POST aussi
                     const { pathname } = new URL(req.url, `http://${req.headers.host}`);
                     
                     switch (pathname) {
@@ -118,22 +118,28 @@ const server = http.createServer(async (req, res) => {
                                 res.end("Erreur : La tranche d'âge et la profession sont obligatoires.");
                                 return;
                             }
-                            const dbMembersPost = new sqlite3.Database(path.resolve(__dirname, 'members.db'), sqlite3.OPEN_READWRITE);
-                            const sql = `INSERT INTO members (statut, name, first_names, neighborhood, age_group, profession, phone) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-                            dbMembersPost.run(sql, [statut, name, first_names, formattedNeighborhood, age_group, profession, phone], function(err) {
-                                if (err) {
-                                    console.error('❌ Erreur lors de l\'ajout du membre :', err.message);
-                                    res.writeHead(500, { "Content-Type": "text/plain" });
-                                    res.end("Erreur lors de l'inscription.");
-                                } else {
-                                    console.log(`✅ Membre ajouté : ${this.lastID}`);
-                                    res.writeHead(302, { Location: "/members" });
-                                    res.end();
-                                }
-                                dbMembersPost.close(); 
-                            });
+                            
+                            let dbMembersPost;
+                            try {
+                                // Initialisation de la base de données
+                                dbMembersPost = new Database(path.resolve(__dirname, 'members.db'), Database.OPEN_READWRITE);
+                                // Utilisation de la méthode synchrone
+                                const stmt = dbMembersPost.prepare(`INSERT INTO members (statut, name, first_names, neighborhood, age_group, profession, phone) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+                                const info = stmt.run(statut, name, first_names, formattedNeighborhood, age_group, profession, phone);
+
+                                console.log(`✅ Membre ajouté : ${info.lastInsertRowid}`);
+                                res.writeHead(302, { Location: "/members" });
+                                res.end();
+                            } catch (err) {
+                                // Gestion des erreurs avec un try-catch
+                                console.error('❌ Erreur lors de l\'ajout du membre :', err.message);
+                                res.writeHead(500, { "Content-Type": "text/plain" });
+                                res.end("Erreur lors de l'inscription.");
+                            } finally {
+                                if (dbMembersPost) dbMembersPost.close();
+                            }
                             break;
-                        // Ajoutez les autres cas POST ici
+                            
                         default:
                             res.writeHead(404, { "Content-Type": "text/plain" });
                             res.end("Route POST non trouvée");
