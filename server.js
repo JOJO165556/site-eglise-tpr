@@ -104,7 +104,7 @@ const server = http.createServer(async (req, res) => {
                     const { pathname } = new URL(req.url, `http://${req.headers.host}`);
                     
                     switch (pathname) {
-                        case "/members":
+                        /*case "/members":
                             const params = querystring.parse(body);
                             const { statut, name, first_names, neighborhood, age_group, profession, phone } = params;
                             const formattedNeighborhood = toTitleCase(neighborhood);
@@ -139,6 +139,7 @@ const server = http.createServer(async (req, res) => {
                                 if (dbMembersPost) dbMembersPost.close();
                             }
                             break;
+                        */
                             
                         default:
                             res.writeHead(404, { "Content-Type": "text/plain" });
