@@ -79,6 +79,27 @@ h1, h2, h3, .display-4, .display-5 {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
+/* Style pour le bouton d'ajout de membre */
+.btn-add-member {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 1px solid #007bff;
+    transition: all 0.3s ease;
+    
+    /* Propriétés de taille et de forme déplacées depuis le HTML */
+    width: 50px;
+    height: 50px;
+    font-size: 2rem;
+    line-height: 1;
+    padding: 0;
+}
+
+/* Style au survol (hover) */
+.btn-add-member:hover {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
 /* ==================== Sections et Hero ==================== */
 .section-padding {
     padding: 5rem 0;
@@ -335,33 +356,79 @@ h1, h2, h3, .display-4, .display-5 {
     padding: 1.5rem;
 }
 
+/* Effet de survol pour les boutons de carrousel */
+.carousel-control-prev-icon:hover,
+.carousel-control-next-icon:hover {
+  background-color: var(--secondary-color) !important;
+}
+
+/* Permet le défilement horizontal pour les petits écrans */
+@media (max-width: 768px) {
+  .scrollable-row {
+    display: flex; /* Aligne les éléments sur une seule ligne */
+    flex-wrap: nowrap; /* Empêche les éléments de passer à la ligne */
+    overflow-x: auto; /* Active le défilement horizontal */
+    
+    /* Cache la barre de défilement (optionnel) */
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none; /* IE et Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollable-row::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
+@media (max-width: 991.98px) {
+  .horizontal-scroll-row {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 1.5rem;
+  }
+  
+  .horizontal-scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .col-scroll-item {
+    min-width: 80%; /* Pour afficher une carte à la fois */
+    flex-shrink: 0;
+    scroll-snap-align: center;
+  }
+}
+
 /* ==================== Formulaire de contact ==================== */
 .contact-form .form-control {
-    border: 2px solid var(--bg-light-color);
-    border-radius: 30px;
-    padding: 1rem 1.5rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  /* Contour permanent de 2px, de la couleur primaire */
+  border: 2px solid var(--primary-color);
+  border-radius: 30px;
+  padding: 1rem 1.5rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .contact-form .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+  /* L'effet d'ombre apparaît au focus */
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+  /* Le contour reste de la couleur primaire au focus */
+  border-color: var(--primary-color);
 }
 
 .btn-form-submit {
-    background-color: var(--primary-color);
-    color: var(--text-light-color);
-    font-size: 1.25rem;
-    border-radius: 50px;
-    padding: 1rem 3rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border: none;
-    transition: background-color 0.3s ease;
+  background-color: var(--primary-color);
+  color: var(--text-light-color);
+  font-size: 1.25rem;
+  border-radius: 50px;
+  padding: 1rem 3rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: none;
+  transition: background-color 0.3s ease;
 }
 
 .btn-form-submit:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
 /* ==================== Boutons généraux ==================== */

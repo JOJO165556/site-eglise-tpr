@@ -1,43 +1,28 @@
+require("dotenv").config();
 const axios = require("axios");
 
-const API_KEY = "sk_sandbox_DV2IOlx7yUyXOH7FXEkwZMJM";
-
-(async () => {
+async function testFormspree() {
+  console.log("Tentative de connexion à Formspree...");
   try {
     const response = await axios.post(
-      "https://sandbox-api.fedapay.com/v1/transactions",
-      {
-        description: "Don test depuis Node.js sans SDK",
-        amount: 500,
-        currency: { iso: "XOF" },
-        customer: {
-          firstname: "Test",
-          lastname: "User",
-          email: "test@example.com",
-          phone_number: {
-            number: "+22890000000",
-            country: "tg"
-          }
-        }
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`, // 🔑 Auth correcte
-          "Content-Type": "application/json"
-        }
-      }
+      process.env.FORMSPREE_URL,
+      { name: "Test", email: "test@example.com", message: "Ceci est un test de connexion." },
+      { headers: { 'Accept': 'application/json' } }
     );
 
-    console.log("✅ Transaction créée !");
-    console.log(response.data);
-
-    // Extraire la transaction
-    const transaction = response.data["v1/transaction"];
-
-    // URL de redirection pour payer
-    console.log("👉 URL de paiement :", transaction.payment_url);
-
-  } catch (err) {
-    console.error("❌ Erreur transaction :", err.response?.data || err.message);
+    console.log("✅ Connexion réussie ! Statut :", response.status);
+  } catch (error) {
+    console.error("❌ Connexion échouée. Détails de l'erreur :");
+    if (error.response) {
+      console.error("  Statut HTTP:", error.response.status);
+      console.error("  Données de l'erreur:", error.response.data);
+    } else if (error.request) {
+      console.error("  La requête n'a pas reçu de réponse.");
+      console.error("  Erreur:", error.message);
+    } else {
+      console.error("  Erreur:", error.message);
+    }
   }
-})();
+}
+
+testFormspree();

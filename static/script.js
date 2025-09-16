@@ -1,5 +1,58 @@
 // Attente du chargement complet du DOM avant d'exécuter le script
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ==================== 5. Chargement des membres via API (JSON) ====================
+    // Récupère le total des membres et les derniers inscrits pour les afficher sur la page d'accueil.
+    async function loadMembersData() {
+        try {
+            const response = await fetch('/api/members');
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+            const members = await response.json();
+            
+            // 1. Afficher le nombre total de membres
+            const totalMembersElement = document.getElementById('totalMembersCount');
+            if (totalMembersElement) {
+                totalMembersElement.textContent = members.length;
+            }
+
+            // 2. Afficher les 10 derniers membres
+            const lastTenMembers = members.slice(0, 10); // Prend les 10 premiers (qui sont les derniers car triés par l'API)
+            const tableBody = document.querySelector('#members-list tbody');
+            if (tableBody) {
+                tableBody.innerHTML = ''; // Vide le contenu existant
+                
+                if (lastTenMembers.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="text-center">Aucun membre inscrit pour le moment.</td></tr>`;
+                } else {
+                    lastTenMembers.forEach(member => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${member.statut || 'Non renseigné'}</td>
+                            <td>${member.name}</td>
+                            <td>${member.first_names}</td>
+                            <td>${member.neighborhood || 'Non renseigné'}</td>
+                            <td>${member.age_group}</td>
+                            <td>${member.profession}</td>
+                            <td>${member.phone || 'Non renseigné'}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Erreur lors du chargement des données des membres:", error);
+            const tableBody = document.querySelector('#members-list tbody');
+            if (tableBody) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Erreur de connexion.</td></tr>`;
+            }
+        }
+    }
+
+    // Exécute la fonction pour charger les données
+    loadMembersData();
+    
     // ==================== 0. Effet texte automatique (machine à écrire) ====================
     const text = "BIENVENUE DANS LA MAISON DU SEIGNEUR...";
     const target = document.getElementById("autoText");
@@ -123,5 +176,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
 });

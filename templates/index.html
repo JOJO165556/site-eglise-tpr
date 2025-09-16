@@ -79,10 +79,15 @@
               <li class="nav-item">
                 <a class="nav-link" href="#contact">Contact</a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/entretien">Entretien</a>
+              <li class="nav-item d-flex align-items-center me-3">
+                <a
+                  class="btn rounded-circle d-flex align-items-center justify-content-center btn-add-member"
+                  href="/members"
+                >
+                  +
+                </a>
               </li>
-              <li class="nav-item nav-item-cta ms-lg-3">
+              <li class="nav-item nav-item-cta">
                 <a class="nav-link btn btn-custom-primary" href="/don">
                   <i class="fa-solid fa-gift"></i> Faire Un Don
                 </a>
@@ -113,73 +118,135 @@
     <main>
       <section id="services" class="container section-padding text-center">
         <h2 class="section-title">Nos Services</h2>
-        <div class="row g-4">
-          <div class="col-12 col-md-6 col-lg-4">
-            <a href="#home" class="card-link">
-              <div class="card card-custom h-100 p-4 fade-in-card">
-                <i class="fas fa-home mb-2 icon-service"></i>
-                <h3 class="h5">Accueil</h3>
-              </div>
-            </a>
+        <div
+          id="servicesCarousel"
+          class="carousel slide"
+          data-bs-ride="carousel"
+        >
+          <div class="carousel-indicators">
+            <button
+              type="button"
+              data-bs-target="#servicesCarousel"
+              data-bs-slide-to="0"
+              class="active"
+              aria-current="true"
+              aria-label="Slide 1"
+            ></button>
+            <button
+              type="button"
+              data-bs-target="#servicesCarousel"
+              data-bs-slide-to="1"
+              aria-label="Slide 2"
+            ></button>
+            <button
+              type="button"
+              data-bs-target="#servicesCarousel"
+              data-bs-slide-to="2"
+              aria-label="Slide 3"
+            ></button>
           </div>
-          <div class="col-12 col-md-6 col-lg-4">
-            <a href="#about" class="card-link">
-              <div class="card card-custom h-100 p-4 fade-in-card">
-                <i class="fas fa-church mb-2 icon-service"></i>
-                <h3 class="h5">À propos de nous</h3>
+
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <div class="row g-4 justify-content-center">
+                <div class="col-12 col-md-6 col-lg-4">
+                  <a href="#home" class="card-link">
+                    <div class="card card-custom h-100 p-4 fade-in-card">
+                      <i class="fas fa-home mb-2 icon-service"></i>
+                      <h3 class="h5">Accueil</h3>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                  <a href="#about" class="card-link">
+                    <div class="card card-custom h-100 p-4 fade-in-card">
+                      <i class="fas fa-church mb-2 icon-service"></i>
+                      <h3 class="h5">À propos de nous</h3>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                  <a href="/entretien" class="card-link">
+                    <div class="card card-custom h-100 p-4 fade-in-card">
+                      <i class="fas fa-comments mb-2 icon-service"></i>
+                      <h3 class="h5">Entretien</h3>
+                    </div>
+                  </a>
+                </div>
               </div>
-            </a>
-          </div>
-          <div class="col-12 col-md-6 col-lg-4">
-            <a href="/entretien" class="card-link">
-              <div class="card card-custom h-100 p-4 fade-in-card">
-                <i class="fas fa-comments mb-2 icon-service"></i>
-                <h3 class="h5">Entretien</h3>
+            </div>
+
+            <div class="carousel-item">
+              <div class="row g-4 justify-content-center">
+                <div class="col-12 col-md-6 col-lg-4">
+                  <div class="card card-custom h-100 p-4 fade-in-card">
+                    <i class="fas fa-book-open mb-2 icon-service"></i>
+                    <h3 class="h5">Bibliothèque</h3>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                  <div class="card card-custom h-100 p-4 fade-in-card">
+                    <i class="fas fa-music mb-2 icon-service"></i>
+                    <h3 class="h5">Cantiques</h3>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                  <div class="card card-custom h-100 p-4 fade-in-card">
+                    <i class="fas fa-bullhorn mb-2 icon-service"></i>
+                    <h3 class="h5">Évangélisation</h3>
+                  </div>
+                </div>
               </div>
-            </a>
-          </div>
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="card card-custom h-100 p-4 fade-in-card">
-              <i class="fas fa-book-open mb-2 icon-service"></i>
-              <h3 class="h5">Bibliothèque</h3>
+            </div>
+
+            <div class="carousel-item">
+              <div class="row g-4 justify-content-center">
+                <div class="col-12 col-md-6 col-lg-4">
+                  <a href="/enfants" class="card-link">
+                    <div class="card card-custom h-100 p-4 fade-in-card">
+                      <i class="fas fa-child mb-2 icon-service"></i>
+                      <h3 class="h5">Enfants</h3>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                  <a href="/jeunesse" class="card-link">
+                    <div class="card card-custom h-100 p-4 fade-in-card">
+                      <i class="fas fa-users mb-2 icon-service"></i>
+                      <h3 class="h5">Jeunesse</h3>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                  <a href="/telecommunication" class="card-link">
+                    <div class="card card-custom h-100 p-4 fade-in-card">
+                      <i class="fas fa-satellite-dish mb-2 icon-service"></i>
+                      <h3 class="h5">Télécommunication</h3>
+                    </div>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="card card-custom h-100 p-4 fade-in-card">
-              <i class="fas fa-music mb-2 icon-service"></i>
-              <h3 class="h5">Cantiques</h3>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="card card-custom h-100 p-4 fade-in-card">
-              <i class="fas fa-bullhorn mb-2 icon-service"></i>
-              <h3 class="h5">Évangélisation</h3>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-4">
-            <a href="/enfants" class="card-link">
-              <div class="card card-custom h-100 p-4 fade-in-card">
-                <i class="fas fa-child mb-2 icon-service"></i>
-                <h3 class="h5">Enfants</h3>
-              </div>
-            </a>
-          </div>
-          <div class="col-12 col-md-6 col-lg-4">
-            <a href="/jeunesse" class="card-link">
-              <div class="card card-custom h-100 p-4 fade-in-card">
-                <i class="fas fa-users mb-2 icon-service"></i>
-                <h3 class="h5">Jeunesse</h3>
-              </div>
-            </a>
-          </div>
-          <div class="col-12 col-md-6 col-lg-4">
-            <a href="/telecommunication" class="card-link">
-              <div class="card card-custom h-100 p-4 fade-in-card">
-                <i class="fas fa-satellite-dish mb-2 icon-service"></i>
-                <h3 class="h5">Télécommunication</h3>
-              </div>
-            </a>
-          </div>
+
+          <button
+            class="carousel-control-prev carousel-buttons-custom"
+            type="button"
+            data-bs-target="#servicesCarousel"
+            data-bs-slide="prev"
+          >
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Précédent</span>
+          </button>
+          <button
+            class="carousel-control-next carousel-buttons-custom"
+            type="button"
+            data-bs-target="#servicesCarousel"
+            data-bs-slide="next"
+          >
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Suivant</span>
+          </button>
         </div>
       </section>
 
@@ -246,68 +313,233 @@
           <p class="text-center mb-5 lead">
             Rejoignez-nous pour nos différents services hebdomadaires.
           </p>
-          <div class="row g-4 justify-content-center">
-            <div class="col-md-6 col-lg-4 fade-in-card">
-              <div class="schedule-card text-center p-4 h-100 rounded-3 shadow">
-                <i class="fas fa-praying-hands fa-3x mb-3 icon-service"></i>
-                <h3 class="h5 fw-bold">Réunion de prière</h3>
-                <p class="mb-1"><strong>Mercredi :</strong> 17h30 - 20h00</p>
-                <p>
-                  <small class="text-muted">Pré-service : 17h30 - 18h00</small>
-                </p>
-                <p>
-                  <small class="text-muted"
-                    >Intercessions : 18h00 - 20h00</small
-                  >
-                </p>
+
+          <div
+            id="scheduleCarousel"
+            class="carousel slide d-none d-lg-block"
+            data-bs-ride="carousel"
+            data-bs-interval="5000"
+          >
+            <div class="carousel-indicators">
+              <button
+                type="button"
+                data-bs-target="#scheduleCarousel"
+                data-bs-slide-to="0"
+                class="active"
+                aria-current="true"
+                aria-label="Slide 1"
+              ></button>
+              <button
+                type="button"
+                data-bs-target="#scheduleCarousel"
+                data-bs-slide-to="1"
+                aria-label="Slide 2"
+              ></button>
+            </div>
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <div class="row g-4 justify-content-center">
+                  <div class="col-6">
+                    <div
+                      class="schedule-card text-center p-4 h-100 rounded-3 shadow"
+                    >
+                      <i
+                        class="fas fa-praying-hands fa-3x mb-3 icon-service"
+                      ></i>
+                      <h3 class="h5 fw-bold">Réunion de prière</h3>
+                      <p class="mb-1">
+                        <strong>Mercredi :</strong> 17h30 - 20h00
+                      </p>
+                      <p>
+                        <small class="text-muted"
+                          >Pré-service : 17h30 - 18h00</small
+                        >
+                      </p>
+                      <p>
+                        <small class="text-muted"
+                          >Intercessions : 18h00 - 20h00</small
+                        >
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div
+                      class="schedule-card text-center p-4 h-100 rounded-3 shadow"
+                    >
+                      <i
+                        class="fas fa-broadcast-tower fa-3x mb-3 icon-service"
+                      ></i>
+                      <h3 class="h5 fw-bold">Émission de radio</h3>
+                      <p class="mb-1"><strong>Jeudi :</strong> 19h00 - 20h00</p>
+                      <p>
+                        <small class="text-muted"
+                          >Écoutez la Parole sur Radio Zion 94.3 FM</small
+                        >
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="row g-4 justify-content-center">
+                  <div class="col-6">
+                    <div
+                      class="schedule-card text-center p-4 h-100 rounded-3 shadow"
+                    >
+                      <i class="fas fa-book-bible fa-3x mb-3 icon-service"></i>
+                      <h3 class="h5 fw-bold">
+                        Service d'adoration et Prédication
+                      </h3>
+                      <p class="mb-1">
+                        <strong>Vendredi :</strong> 17h30 - 20h00
+                      </p>
+                      <p>
+                        <small class="text-muted"
+                          >Pré-service : 17h30 - 18h00</small
+                        >
+                      </p>
+                      <p>
+                        <small class="text-muted"
+                          >Découvrez la parole de Dieu en profondeur : 18h00 -
+                          20h00</small
+                        >
+                      </p>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div
+                      class="schedule-card text-center p-4 h-100 rounded-3 shadow"
+                    >
+                      <i class="fas fa-sun fa-3x mb-3 icon-service"></i>
+                      <h3 class="h5 fw-bold">Culte dominical</h3>
+                      <p class="mb-1">
+                        <strong>Dimanche :</strong> 08h00 - 12h00
+                      </p>
+                      <p>
+                        <small class="text-muted"
+                          >Ecole de Dimanche : 08h00 - 08h45</small
+                        >
+                      </p>
+                      <p>
+                        <small class="text-muted"
+                          >Pré-service : 09h00 - 09h30</small
+                        >
+                      </p>
+                      <p>
+                        <small class="text-muted"
+                          >Service d'adoration et Prédication : 09h30 -
+                          12h00</small
+                        >
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="col-md-6 col-lg-4 fade-in-card">
-              <div class="schedule-card text-center p-4 h-100 rounded-3 shadow">
-                <i class="fas fa-broadcast-tower fa-3x mb-3 icon-service"></i>
-                <h3 class="h5 fw-bold">Émission de radio</h3>
-                <p class="mb-1"><strong>Jeudi :</strong> 19h00 - 20h00</p>
-                <p>
-                  <small class="text-muted"
-                    >Écoutez la Parole sur Radio Zion 94.3 FM</small
-                  >
-                </p>
+            <button
+              class="carousel-control-prev carousel-buttons-custom"
+              type="button"
+              data-bs-target="#scheduleCarousel"
+              data-bs-slide="prev"
+            >
+              <span
+                class="carousel-control-prev-icon"
+                aria-hidden="true"
+              ></span>
+              <span class="visually-hidden">Précédent</span>
+            </button>
+            <button
+              class="carousel-control-next carousel-buttons-custom"
+              type="button"
+              data-bs-target="#scheduleCarousel"
+              data-bs-slide="next"
+            >
+              <span
+                class="carousel-control-next-icon"
+                aria-hidden="true"
+              ></span>
+              <span class="visually-hidden">Suivant</span>
+            </button>
+          </div>
+
+          <div class="d-lg-none">
+            <div class="horizontal-scroll-row d-flex flex-nowrap g-4 pb-3">
+              <div class="col-12 col-md-6 col-scroll-item">
+                <div
+                  class="schedule-card text-center p-4 h-100 rounded-3 shadow"
+                >
+                  <i class="fas fa-praying-hands fa-3x mb-3 icon-service"></i>
+                  <h3 class="h5 fw-bold">Réunion de prière</h3>
+                  <p class="mb-1"><strong>Mercredi :</strong> 17h30 - 20h00</p>
+                  <p>
+                    <small class="text-muted"
+                      >Pré-service : 17h30 - 18h00</small
+                    >
+                  </p>
+                  <p>
+                    <small class="text-muted"
+                      >Intercessions : 18h00 - 20h00</small
+                    >
+                  </p>
+                </div>
               </div>
-            </div>
-            <div class="col-md-6 col-lg-4 fade-in-card">
-              <div class="schedule-card text-center p-4 h-100 rounded-3 shadow">
-                <i class="fas fa-book-bible fa-3x mb-3 icon-service"></i>
-                <h3 class="h5 fw-bold">Service d'adoration et Prédication</h3>
-                <p class="mb-1"><strong>Vendredi :</strong> 17h30 - 20h00</p>
-                <p>
-                  <small class="text-muted">Pré-service : 17h30 - 18h00</small>
-                </p>
-                <p>
-                  <small class="text-muted"
-                    >Découvrez la parole de Dieu en profondeur : 18h00 -
-                    20h00</small
-                  >
-                </p>
+              <div class="col-12 col-md-6 col-scroll-item">
+                <div
+                  class="schedule-card text-center p-4 h-100 rounded-3 shadow"
+                >
+                  <i class="fas fa-broadcast-tower fa-3x mb-3 icon-service"></i>
+                  <h3 class="h5 fw-bold">Émission de radio</h3>
+                  <p class="mb-1"><strong>Jeudi :</strong> 19h00 - 20h00</p>
+                  <p>
+                    <small class="text-muted"
+                      >Écoutez la Parole sur Radio Zion 94.3 FM</small
+                    >
+                  </p>
+                </div>
               </div>
-            </div>
-            <div class="col-md-6 col-lg-4 fade-in-card">
-              <div class="schedule-card text-center p-4 h-100 rounded-3 shadow">
-                <i class="fas fa-sun fa-3x mb-3 icon-service"></i>
-                <h3 class="h5 fw-bold">Culte dominical</h3>
-                <p class="mb-1"><strong>Dimanche :</strong> 08h00 - 12h00</p>
-                <p>
-                  <small class="text-muted"
-                    >Ecole de Dimanche : 08h00 - 08h45</small
-                  >
-                </p>
-                <p>
-                  <small class="text-muted">Pré-service : 09h00 - 09h30</small>
-                </p>
-                <p>
-                  <small class="text-muted"
-                    >Service d'adoration et Prédication : 09h30 - 12h00</small
-                  >
-                </p>
+              <div class="col-12 col-md-6 col-scroll-item">
+                <div
+                  class="schedule-card text-center p-4 h-100 rounded-3 shadow"
+                >
+                  <i class="fas fa-book-bible fa-3x mb-3 icon-service"></i>
+                  <h3 class="h5 fw-bold">Service d'adoration et Prédication</h3>
+                  <p class="mb-1"><strong>Vendredi :</strong> 17h30 - 20h00</p>
+                  <p>
+                    <small class="text-muted"
+                      >Pré-service : 17h30 - 18h00</small
+                    >
+                  </p>
+                  <p>
+                    <small class="text-muted"
+                      >Découvrez la parole de Dieu en profondeur : 18h00 -
+                      20h00</small
+                    >
+                  </p>
+                </div>
+              </div>
+              <div class="col-12 col-md-6 col-scroll-item">
+                <div
+                  class="schedule-card text-center p-4 h-100 rounded-3 shadow"
+                >
+                  <i class="fas fa-sun fa-3x mb-3 icon-service"></i>
+                  <h3 class="h5 fw-bold">Culte dominical</h3>
+                  <p class="mb-1"><strong>Dimanche :</strong> 08h00 - 12h00</p>
+                  <p>
+                    <small class="text-muted"
+                      >Ecole de Dimanche : 08h00 - 08h45</small
+                    >
+                  </p>
+                  <p>
+                    <small class="text-muted"
+                      >Pré-service : 09h00 - 09h30</small
+                    >
+                  </p>
+                  <p>
+                    <small class="text-muted"
+                      >Service d'adoration et Prédication : 09h30 - 12h00</small
+                    >
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -386,7 +618,7 @@
               </div>
             </div>
             <button
-              class="carousel-control-prev"
+              class="carousel-control-prev carousel-buttons-custom"
               type="button"
               data-bs-target="#galleryCarousel"
               data-bs-slide="prev"
@@ -398,7 +630,7 @@
               <span class="visually-hidden">Précédent</span>
             </button>
             <button
-              class="carousel-control-next"
+              class="carousel-control-next carousel-buttons-custom"
               type="button"
               data-bs-target="#galleryCarousel"
               data-bs-slide="next"
@@ -414,10 +646,89 @@
       </section>
 
       <section id="events" class="container section-padding text-center">
-        <h2 class="section-title">Nos Prochains Événements</h2>
-        <div class="row g-4 justify-content-center">
-          <div class="col-12 col-md-6 col-lg-4 d-flex">
-            <div class="card event-card h-100 w-100 p-3 fade-in-card">
+        <h2 class="section-title section-title-animated">
+          Nos Prochains Événements
+        </h2>
+
+        <div
+          id="eventsCarousel"
+          class="carousel slide d-none d-lg-block"
+          data-bs-ride="carousel"
+          data-bs-interval="5000"
+        >
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <div class="row g-4 justify-content-center">
+                <div class="col-6">
+                  <div class="card event-card h-100 w-100 p-3 fade-in-card">
+                    <img
+                      src="images_Church/seminaire.jpeg"
+                      class="card-img-top rounded-3 hover-enlarge"
+                      alt="Séminaire des Jeunes"
+                    />
+                    <div class="card-body">
+                      <h5 class="card-title">Séminaire des Jeunes</h5>
+                      <p class="card-text text-muted">
+                        <i class="far fa-calendar-alt"></i> 09 août 2025
+                      </p>
+                      <p class="card-text">
+                        Journée exceptionnelle pour se former, se rapprocher de
+                        Dieu.
+                      </p>
+                      <a href="#" class="btn btn-outline-custom"
+                        >En savoir plus</a
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="card event-card h-100 w-100 p-3 fade-in-card">
+                    <img
+                      src="images_Church/camp2025_1.jpg"
+                      class="card-img-top rounded-3 hover-enlarge"
+                      alt="Image du camp des jeunes à Adokpoè"
+                    />
+                    <div class="card-body">
+                      <h5 class="card-title">Camp des jeunes à Adokpoè</h5>
+                      <p class="card-text text-muted">
+                        <i class="far fa-calendar-alt"></i> 10-17 août 2025
+                      </p>
+                      <p class="card-text">
+                        Moment de communion pour te reconnecter à Dieu,
+                        découvrir ta mission dans ce monde.
+                      </p>
+                      <a href="#" class="btn btn-outline-custom"
+                        >En savoir plus</a
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button
+            class="carousel-control-prev"
+            type="button"
+            data-bs-target="#eventsCarousel"
+            data-bs-slide="prev"
+          >
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Précédent</span>
+          </button>
+          <button
+            class="carousel-control-next"
+            type="button"
+            data-bs-target="#eventsCarousel"
+            data-bs-slide="next"
+          >
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Suivant</span>
+          </button>
+        </div>
+
+        <div class="d-lg-none mt-4">
+          <div class="horizontal-scroll-row d-flex flex-nowrap g-4">
+            <div class="col-12 col-scroll-item">
               <div class="card event-card h-100 w-100 p-3 fade-in-card">
                 <img
                   src="images_Church/seminaire.jpeg"
@@ -437,24 +748,24 @@
                 </div>
               </div>
             </div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-4 d-flex">
-            <div class="card event-card h-100 w-100 p-3 fade-in-card">
-              <img
-                src="images_Church/camp2025_1.jpg"
-                class="card-img-top rounded-3 hover-enlarge"
-                alt="Image du camp des jeunes à Adokpoè"
-              />
-              <div class="card-body">
-                <h5 class="card-title">Camp des jeunes à Adokpoè</h5>
-                <p class="card-text text-muted">
-                  <i class="far fa-calendar-alt"></i> 10-17 août 2025
-                </p>
-                <p class="card-text">
-                  Moment de communion pour te reconnecter à Dieu, découvrir ta
-                  mission dans ce monde.
-                </p>
-                <a href="#" class="btn btn-outline-custom">En savoir plus</a>
+            <div class="col-12 col-scroll-item">
+              <div class="card event-card h-100 w-100 p-3 fade-in-card">
+                <img
+                  src="images_Church/camp2025_1.jpg"
+                  class="card-img-top rounded-3 hover-enlarge"
+                  alt="Image du camp des jeunes à Adokpoè"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">Camp des jeunes à Adokpoè</h5>
+                  <p class="card-text text-muted">
+                    <i class="far fa-calendar-alt"></i> 10-17 août 2025
+                  </p>
+                  <p class="card-text">
+                    Moment de communion pour te reconnecter à Dieu, découvrir ta
+                    mission dans ce monde.
+                  </p>
+                  <a href="#" class="btn btn-outline-custom">En savoir plus</a>
+                </div>
               </div>
             </div>
           </div>
@@ -470,8 +781,8 @@
         <p class="lead">Téléphone : +228 90 05 60 26</p>
         <form
           class="row g-3 justify-content-center mt-3 contact-form"
-          id="contactForm"
-          action="submit_form.php"
+          id="contact-form"
+          action="/envoyer-message"
           method="POST"
         >
           <div class="col-12 col-md-6 col-lg-4">
@@ -576,5 +887,6 @@
     ></script>
 
     <script src="script.js"></script>
+    <script src="formulaire.js"></script>
   </body>
 </html>

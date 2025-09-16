@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Liste des Membres</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/members.css" />
+    <link rel="stylesheet" href="/bootstrap-5.3.5-dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container my-5">
+      <h1>Inscription des Membres</h1>
+      <form action="/members" method="POST" class="mb-5">
+        <div class="mb-3">
+          <label for="name" class="form-label">Nom :</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            name="name"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="first_names" class="form-label">Prénoms :</label>
+          <input
+            type="text"
+            class="form-control"
+            id="first_names"
+            name="first_names"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Statut :</label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="statut"
+                id="statutFrere"
+                value="Frère"
+                required
+              />
+              <label class="form-check-label" for="statutFrere">Frère</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="statut"
+                id="statutSoeur"
+                value="Sœur"
+                required
+              />
+              <label class="form-check-label" for="statutSoeur">Sœur</label>
+            </div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="age_group" class="form-label">Tranche d'âge :</label>
+          <select class="form-select" id="age_group" name="age_group" required>
+            <option value="">Sélectionner une tranche d'âge</option>
+            <option value="0-12 ans">0-12 ans</option>
+            <option value="13-17 ans">13-17 ans</option>
+            <option value="18-25 ans">18-25 ans</option>
+            <option value="26-40 ans">26-40 ans</option>
+            <option value="41-60 ans">41-60 ans</option>
+            <option value="60+ ans">60+ ans</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="neighborhood" class="form-label">Quartier :</label>
+          <input
+            type="text"
+            class="form-control"
+            id="neighborhood"
+            name="neighborhood"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="profession" class="form-label">Profession :</label>
+          <select
+            class="form-control js-example-basic-single"
+            name="profession"
+          >
+            <option value="">Sélectionner une profession</option>
+            <option value="Agriculteur">Agriculteur</option>
+            <option value="Artiste">Artiste</option>
+            <option value="Avocat">Avocat</option>
+            <option value="Comptable">Comptable</option>
+            <option value="Commerçant">Commerçant</option>
+            <option value="Consultant">Consultant</option>
+            <option value="Développeur Web">Développeur Web</option>
+            <option value="Enseignant">Enseignant</option>
+            <option value="Entrepreneur">Entrepreneur</option>
+            <option value="Élève">Élève</option>
+            <option value="Étudiant">Étudiant</option>
+            <option value="Fonctionnaire">Fonctionnaire</option>
+            <option value="Infirmier">Infirmier</option>
+            <option value="Ingénieur">Ingénieur</option>
+            <option value="Journaliste">Journaliste</option>
+            <option value="Médecin">Médecin</option>
+            <option value="Retraité">Retraité</option>
+            <option value="Sans emploi">Sans emploi</option>
+            <option value="Technicien">Technicien</option>
+            <option value="Vendeur">Vendeur</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="phone" class="form-label"
+            >Contact (Numéro de téléphone) :</label
+          >
+          <input
+            type="tel"
+            class="form-control"
+            id="phone"
+            name="phone"
+            placeholder="90 00 00 00"
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary">S'inscrire</button>
+      </form>
+
+      <hr />
+
+      <h2>Liste des Membres</h2>
+      <div class="mb-3">
+        <label for="searchInput" class="form-label"
+          >Rechercher un membre :</label
+        >
+        <input
+          type="text"
+          class="form-control"
+          id="searchInput"
+          placeholder="Rechercher par nom, prénom, profession..."
+        />
+      </div>
+
+      <table id="membersTable" class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Prénoms</th>
+            <th>Statut</th>
+            <th>Tranche d'âge</th>
+            <th>Quartier</th>
+            <th>Profession</th>
+            <th>Contact</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"></script>
+    <script src="/members.js"></script>
+  </body>
+</html>
