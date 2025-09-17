@@ -5,13 +5,16 @@ const serveStatic = require("serve-static");
 const axios = require("axios");
 const querystring = require('querystring');
 const nodemailer = require('nodemailer');
-// Correction : le nom de la variable ne doit pas contenir de tiret
-const Database = require('better-sqlite3');
+const { createClient } = require('@supabase/supabase-js');
 require("dotenv").config();
 const { URL } = require("url");
 
 const { envoyerRecu } = require("./utils/email");
-const API_KEY = process.env.FEDAPAY_API_KEY;
+
+// Initialisation du client Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const servePublic = serveStatic(path.join(__dirname, "static"));
 
@@ -50,24 +53,21 @@ const server = http.createServer(async (req, res) => {
                         break;
                     
                     case "/api/members":
-                        let dbApi;
-                        try {
-                            // Initialisation de la base de données
-                            dbApi = new Database(path.resolve(__dirname, 'members.db'), { readonly: true });
-                            // Utilisation de la méthode synchrone
-                            const stmt = dbApi.prepare("SELECT * FROM members ORDER BY name");
-                            const rows = stmt.all();
-                            
-                            res.writeHead(200, { "Content-Type": "application/json" });
-                            res.end(JSON.stringify(rows));
-                        } catch (err) {
-                            // Gestion des erreurs avec un try-catch
+                        // Récupération des données depuis Supabase
+                        const { data, error } = await supabase
+                            .from('members')
+                            .select('*')
+                            .order('name');
+
+                        if (error) {
+                            console.error("❌ Erreur Supabase:", error);
                             res.writeHead(500, { "Content-Type": "application/json" });
-                            res.end(JSON.stringify({ error: err.message }));
-                        } finally {
-                            // Assurez-vous de toujours fermer la connexion
-                            if (dbApi) dbApi.close();
+                            res.end(JSON.stringify({ error: error.message }));
+                            return;
                         }
+                        
+                        res.writeHead(200, { "Content-Type": "application/json" });
+                        res.end(JSON.stringify(data));
                         break;
                         
                     case "/don":
@@ -104,7 +104,7 @@ const server = http.createServer(async (req, res) => {
                     const { pathname } = new URL(req.url, `http://${req.headers.host}`);
                     
                     switch (pathname) {
-                        /*case "/members":
+                        case "/members":
                             const params = querystring.parse(body);
                             const { statut, name, first_names, neighborhood, age_group, profession, phone } = params;
                             const formattedNeighborhood = toTitleCase(neighborhood);
@@ -119,27 +119,30 @@ const server = http.createServer(async (req, res) => {
                                 return;
                             }
                             
-                            let dbMembersPost;
-                            try {
-                                // Initialisation de la base de données
-                                dbMembersPost = new Database(path.resolve(__dirname, 'members.db'), Database.OPEN_READWRITE);
-                                // Utilisation de la méthode synchrone
-                                const stmt = dbMembersPost.prepare(`INSERT INTO members (statut, name, first_names, neighborhood, age_group, profession, phone) VALUES (?, ?, ?, ?, ?, ?, ?)`);
-                                const info = stmt.run(statut, name, first_names, formattedNeighborhood, age_group, profession, phone);
-
-                                console.log(`✅ Membre ajouté : ${info.lastInsertRowid}`);
-                                res.writeHead(302, { Location: "/members" });
-                                res.end();
-                            } catch (err) {
-                                // Gestion des erreurs avec un try-catch
-                                console.error('❌ Erreur lors de l\'ajout du membre :', err.message);
+                            // Insertion des données dans la base de données Supabase
+                            const { data, error } = await supabase
+                                .from('members')
+                                .insert([{ 
+                                    statut: statut, 
+                                    name: name, 
+                                    first_names: first_names, 
+                                    neighborhood: formattedNeighborhood, 
+                                    age_group: age_group, 
+                                    profession: profession, 
+                                    phone: phone 
+                                }]);
+                            
+                            if (error) {
+                                console.error('❌ Erreur Supabase lors de l\'ajout du membre :', error.message);
                                 res.writeHead(500, { "Content-Type": "text/plain" });
                                 res.end("Erreur lors de l'inscription.");
-                            } finally {
-                                if (dbMembersPost) dbMembersPost.close();
+                                return;
                             }
+
+                            console.log(`✅ Membre ajouté avec succès !`);
+                            res.writeHead(302, { Location: "/members" });
+                            res.end();
                             break;
-                        */
                             
                         default:
                             res.writeHead(404, { "Content-Type": "text/plain" });
