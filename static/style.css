@@ -79,27 +79,6 @@ h1, h2, h3, .display-4, .display-5 {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
-/* Style pour le bouton d'ajout de membre */
-.btn-add-member {
-    background-color: white !important;
-    color: #007bff !important;
-    border: 1px solid #007bff;
-    transition: all 0.3s ease;
-    
-    /* Propriétés de taille et de forme déplacées depuis le HTML */
-    width: 50px;
-    height: 50px;
-    font-size: 2rem;
-    line-height: 1;
-    padding: 0;
-}
-
-/* Style au survol (hover) */
-.btn-add-member:hover {
-    background-color: #007bff !important;
-    color: white !important;
-}
-
 /* ==================== Sections et Hero ==================== */
 .section-padding {
     padding: 5rem 0;
@@ -561,4 +540,9 @@ h1, h2, h3, .display-4, .display-5 {
     .hero-section {
         padding: 5rem 0;
     }
+}
+
+/* Ajoute un espace à gauche au deuxième bouton nav-item-cta */
+.nav-item-cta + .nav-item-cta {
+    margin-left: 20px;
 }

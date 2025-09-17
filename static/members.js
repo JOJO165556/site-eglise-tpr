@@ -1,58 +1,177 @@
-$(document).ready(function() {
-    $('.js-example-basic-single').select2();
+// Déclaration des variables globales
+let membersData = [];
+let currentSortColumn = 'name';
+let currentSortDirection = 'asc';
 
-    const input = document.querySelector("#phone");
-    const iti = window.intlTelInput(input, {
+// Attente du chargement complet du DOM
+document.addEventListener('DOMContentLoaded', async () => {
+
+    // Initialisation des plugins
+    $('.js-example-basic-single').select2();
+    const phoneInput = document.querySelector("#phone");
+    const iti = window.intlTelInput(phoneInput, {
+        initialCountry: "tg",
+        preferredCountries: ["tg", "ci", "gh", "sn"],
+        separateDialCode: true,
         utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
     });
 
-    // Fonction pour charger et afficher les membres
-    function loadMembers() {
-        $.ajax({
-            url: '/api/members', // Nouvelle route API
-            type: 'GET',
-            dataType: 'json',
-            success: function(members) {
-                const tableBody = $('#membersTable tbody');
-                tableBody.empty(); // Vider le tableau existant
+    const memberForm = document.getElementById('memberForm');
+    const formMessage = document.getElementById('form-message');
+    const searchInput = document.getElementById('searchInput');
 
-                if (members.length === 0) {
-                    tableBody.append('<tr><td colspan="7" class="text-center">Aucun membre inscrit.</td></tr>');
-                    return;
-                }
+    // Fonction pour trier et afficher les membres
+    function loadAndSortMembers() {
+        const sortedMembers = [...membersData].sort((a, b) => {
+            const valA = a[currentSortColumn];
+            const valB = b[currentSortColumn];
+            
+            // Logique de tri simple
+            if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
 
-                members.forEach(member => {
-                    const row = `
-                        <tr>
-                            <td>${member.statut || 'Non renseigné'}</td>
-                            <td>${member.name}</td>
-                            <td>${member.first_names}</td>
-                            <td>${member.neighborhood || 'Non renseigné'}</td>
-                            <td>${member.age_group}</td>
-                            <td>${member.profession}</td>
-                            <td>${member.phone || 'Non renseigné'}</td>
-                        </tr>
-                    `;
-                    tableBody.append(row);
-                });
-            },
-            error: function(error) {
-                console.error("Erreur lors de la récupération des membres :", error);
-                const tableBody = $('#membersTable tbody');
-                tableBody.empty();
-                tableBody.append('<tr><td colspan="7" class="text-center text-danger">Erreur lors du chargement des membres.</td></tr>');
-            }
+        const tableBody = document.querySelector('#membersTable tbody');
+        tableBody.innerHTML = '';
+
+        if (sortedMembers.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="7" class="text-center">Aucun membre inscrit.</td></tr>`;
+            return;
+        }
+
+        sortedMembers.forEach(member => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${member.name}</td>
+                <td>${member.first_names}</td>
+                <td>${member.statut || 'Non renseigné'}</td>
+                <td>${member.age_group}</td>
+                <td>${member.neighborhood || 'Non renseigné'}</td>
+                <td>${member.profession}</td>
+                <td>${member.phone || 'Non renseigné'}</td>
+            `;
+            tableBody.appendChild(row);
         });
     }
 
-    // Fonction de recherche
-    $('#searchInput').on('keyup', function() {
-        const value = $(this).val().toLowerCase();
-        $("#membersTable tbody tr").filter(function() {
-            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+    // Fonction pour charger les membres depuis l'API
+    async function fetchMembers() {
+        try {
+            const response = await fetch('/api/members'); // L'URL correcte
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+            membersData = await response.json();
+            loadAndSortMembers();
+        } catch (error) {
+            console.error("Erreur lors de la récupération des membres:", error);
+            const tableBody = document.querySelector('#membersTable tbody');
+            tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Erreur de connexion.</td></tr>`;
+        }
+    }
+
+    // Événement pour le tri du tableau
+    document.querySelector('#membersTable thead').addEventListener('click', function(e) {
+        const header = e.target.closest('th');
+        if (!header) return;
+
+        const column = header.dataset.sort;
+        if (currentSortColumn === column) {
+            currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSortColumn = column;
+            currentSortDirection = 'asc';
+        }
+        
+        document.querySelectorAll('#membersTable thead th i').forEach(icon => {
+            icon.className = 'bi bi-sort-down-alt';
         });
+
+        const icon = header.querySelector('i');
+        if (icon) {
+            icon.className = currentSortDirection === 'asc' ? 'bi bi-sort-down' : 'bi bi-sort-up';
+        }
+        
+        loadAndSortMembers();
     });
 
-    // Appel initial pour charger les membres au chargement de la page
-    loadMembers();
+    // Événement pour la barre de recherche
+    searchInput.addEventListener('keyup', (e) => {
+        const searchValue = e.target.value.toLowerCase();
+        const filteredMembers = membersData.filter(member => {
+            return Object.values(member).some(value => 
+                String(value).toLowerCase().includes(searchValue)
+            );
+        });
+        
+        // Afficher les membres filtrés
+        const tableBody = document.querySelector('#membersTable tbody');
+        tableBody.innerHTML = '';
+        if (filteredMembers.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="7" class="text-center">Aucun résultat trouvé.</td></tr>`;
+        } else {
+            filteredMembers.forEach(member => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${member.name}</td>
+                    <td>${member.first_names}</td>
+                    <td>${member.statut || 'Non renseigné'}</td>
+                    <td>${member.age_group}</td>
+                    <td>${member.neighborhood || 'Non renseigné'}</td>
+                    <td>${member.profession}</td>
+                    <td>${member.phone || 'Non renseigné'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    });
+
+    // Gestion de la soumission du formulaire
+    memberForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const fullNumber = iti.getNumber();
+        const formData = new FormData(memberForm);
+        const memberData = {
+            statut: formData.get('statut'),
+            name: formData.get('name'),
+            first_names: formData.get('first_names'),
+            neighborhood: formData.get('neighborhood'),
+            age_group: formData.get('age_group'),
+            profession: formData.get('profession'),
+            phone: fullNumber
+        };
+
+        if (!memberData.name || !memberData.first_names || !memberData.age_group || !memberData.profession) {
+            formMessage.innerHTML = `<div class="alert alert-danger" role="alert">Les champs Nom, Prénoms, Tranche d'âge et Profession sont obligatoires.</div>`;
+            return;
+        }
+
+        formMessage.innerHTML = `<div class="alert alert-info" role="alert">Envoi en cours...</div>`;
+
+        try {
+            const response = await fetch('/api/members', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(memberData)
+            });
+
+            if (response.ok) {
+                formMessage.innerHTML = `<div class="alert alert-success" role="alert">Membre enregistré avec succès !</div>`;
+                memberForm.reset();
+                $('.js-example-basic-single').val('').trigger('change');
+                await fetchMembers();
+            } else {
+                const errorData = await response.json();
+                formMessage.innerHTML = `<div class="alert alert-warning" role="alert">Erreur lors de l'enregistrement: ${errorData.message || 'Erreur inconnue'}</div>`;
+            }
+        } catch (error) {
+            console.error("Erreur lors de l'enregistrement:", error);
+            formMessage.innerHTML = `<div class="alert alert-danger" role="alert">Erreur réseau lors de l'enregistrement.</div>`;
+        }
+    });
+
+    // Lancement initial
+    await fetchMembers();
 });

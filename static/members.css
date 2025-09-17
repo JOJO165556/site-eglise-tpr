@@ -2,97 +2,111 @@
 
 /* Améliore le conteneur principal */
 .container {
-  background-color: var(--bg-white-color);
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  padding: 40px;
+    background-color: var(--bg-white-color);
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px; /* Valeur par défaut pour les grands écrans */
 }
 
 /* Style le formulaire et le tableau */
 .container h1,
 .container h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5rem; /* Valeur par défaut pour les grands écrans */
 }
 
 /* Améliore le style des labels et des inputs */
 .form-label {
-  font-weight: 600;
-  color: var(--primary-color);
+    font-weight: 600;
+    color: var(--primary-color);
 }
 
 .form-control,
 .form-select,
 .js-example-basic-single {
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  padding: 10px 15px;
-  transition: all 0.3s ease;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
 }
 
 .form-control:focus,
 .form-select:focus {
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
 }
 
 /* Style le bouton d'inscription */
 .btn-primary {
-  background-color: var(--primary-color);
-  color: var(--text-light-color);
-  border: none;
-  border-radius: 50px;
-  padding: 12px 30px;
-  font-weight: bold;
-  transition: all 0.3s ease;
+    background-color: var(--primary-color);
+    color: var(--text-light-color);
+    border: none;
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-weight: bold;
+    transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-  background-color: #0c4075;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #0c4075;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Style le tableau des membres */
 .table {
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 10px;
-  overflow: hidden; /* Important pour que les coins arrondis fonctionnent */
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
 }
 
 .table thead {
-  background-color: var(--primary-color);
-  color: var(--text-light-color);
+    background-color: var(--primary-color);
+    color: var(--text-light-color);
 }
 
 .table th {
-  padding: 15px;
-  text-transform: uppercase;
-  font-size: 0.9rem;
+    padding: 15px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
 }
 
 .table td {
-  padding: 12px 15px;
-  vertical-align: middle;
+    padding: 12px 15px;
+    vertical-align: middle;
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-  background-color: var(--bg-white-color);
+    background-color: var(--bg-white-color);
 }
 
 .table-striped tbody tr:nth-of-type(even) {
-  background-color: var(--bg-light-color);
+    background-color: var(--bg-light-color);
 }
 
 .table-striped tbody tr:hover {
-  background-color: var(--secondary-color);
-  color: var(--text-dark-color);
-  transition: all 0.2s ease;
+    background-color: var(--secondary-color);
+    color: var(--text-dark-color);
+    transition: all 0.2s ease;
 }
 
 /* Améliore la barre de recherche */
 #searchInput {
-  border-radius: 50px;
+    border-radius: 50px;
+}
+
+/* ==================== Styles Responsifs (Media Queries) ==================== */
+/* Ces règles s'appliquent sur les écrans plus petits que 576px (téléphones) */
+@media (max-width: 575.98px) {
+    .container {
+        /* Force le padding à zéro pour un affichage sur toute la largeur des téléphones */
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .container h1,
+    .container h2 {
+        font-size: 1.8rem;
+    }
 }
