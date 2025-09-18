@@ -27,7 +27,7 @@ h1, h2, h3, .display-4, .display-5 {
 
 /* ==================== Header et navigation ==================== */
 .main-header {
-    background-color: var(--primary-color);
+    background-color: var(--bg-light-color);
     color: var(--text-light-color);
     padding: 2rem 0;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -47,36 +47,39 @@ h1, h2, h3, .display-4, .display-5 {
 .navbar-nav .nav-link {
     font-size: 1.5rem; 
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.8);
-    transition: color 0.3s ease;
+    color: var(--text-dark-color);
+    transition: all 0.3s ease;
 }
 
 .navbar-nav .nav-link:hover {
+    background-color: var(--primary-color);
     color: var(--text-light-color);
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
 }
 
 .nav-link.btn-custom-primary {
-    background-color: var(--bg-white-color);
-    color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: var(--text-light-color);
     border-radius: 50px;
     padding: 0.75rem 2rem;
     font-weight: bold;
-    border: 2px solid var(--bg-white-color);
+    border: 2px solid var(--primary-color);
     transition: all 0.3s ease;
 }
 
 .nav-link.btn-custom-primary:hover {
     background-color: transparent;
-    color: var(--text-light-color);
-    border-color: var(--text-light-color);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .navbar-toggler {
-    border-color: rgba(255, 255, 255, 0.5);
+    border-color: var(--primary-color);
 }
 
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgb%2812, 71, 134%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 /* ==================== Sections et Hero ==================== */
@@ -103,18 +106,28 @@ h1, h2, h3, .display-4, .display-5 {
     justify-content: center;
     align-items: center;
     text-align: center;
-    color: var(--text-light-color);
-    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('images_Church/Jesus.jpg');
-    background-size: cover;
+    /* La couleur du texte est ajustée pour le fond clair */
+    color: var(--text-dark-color);
+    
+    /* Retire l'image et le dégradé de fond */
+    background-image: none;
+    background-color: var(--bg-light-color); /* Utilise la couleur de fond de la page */
+    
+    /* Retire les propriétés liées à l'image */
+    background-size: auto;
     background-position: center;
     background-repeat: no-repeat;
-    animation: background-zoom 30s ease-in-out infinite alternate;
+    animation: none;
 }
 
 .hero-text-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100vh; 
+  padding: 20px;
 }
 
 .hero-title {
@@ -148,57 +161,46 @@ h1, h2, h3, .display-4, .display-5 {
 }
 
 /* ==================== Cartes et blocs ==================== */
-.citation-card {
-    background-color: rgba(255, 255, 255, 0.1);
+.citation-card,
+.custom-blockquote {
     backdrop-filter: blur(5px);
     border: 3px solid var(--secondary-color);
     border-radius: 15px;
-    padding: 2rem;
-    margin: 2rem auto;
-    max-width: 700px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-    position: relative;
+    padding: 25px 40px;
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
 }
 
-.citation-text {
-    font-family: var(--font-secondary);
-    font-size: 1.5rem;
-    font-style: italic;
-    color: var(--text-light-color);
-    margin-bottom: 1rem;
-    line-height: 1.5;
-}
-
-.citation-reference {
-    font-family: var(--font-primary);
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--secondary-color);
-    text-align: right;
-    margin: 0;
-}
-
-@media (max-width: 768px) {
-    .citation-card {
-        padding: 1.5rem;
-        margin: 1.5rem auto;
-    }
-    .citation-text {
-        font-size: 1.2rem;
-    }
-    .citation-reference {
-        font-size: 1rem;
-    }
+.citation-card {
+    background-color: var(--bg-light-color);
+    margin-top: 30px;
 }
 
 .custom-blockquote {
-    max-width: 700px;
-    margin: 2rem auto;
-    padding: 1.5rem;
     background-color: rgba(0, 0, 0, 0.4);
     border-left: 5px solid var(--secondary-color);
-    border-radius: 8px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    border-radius: 8px; /* On peut ajuster ce rayon si on veut un style différent pour les blockquotes */
+}
+
+.citation-card:hover {
+    transform: translateY(-5px);
+}
+
+.citation-text {
+    font-style: italic;
+    font-size: 1.1em;
+    color: var(--text-dark-color);
+    line-height: 1.6;
+}
+
+.citation-reference {
+    text-align: right;
+    font-weight: 600;
+    margin-top: 15px;
+    color: var(--primary-color);
 }
 
 .card-custom {
