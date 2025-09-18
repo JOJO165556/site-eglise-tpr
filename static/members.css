@@ -37,6 +37,11 @@
     box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
 }
 
+legend {
+  font-size: 1rem; /* Ou la taille que vous utilisez pour vos labels */
+  font-weight: 400; /* Poids de la police normal */
+}
+
 /* Style le bouton d'inscription */
 .btn-primary {
     background-color: var(--primary-color);

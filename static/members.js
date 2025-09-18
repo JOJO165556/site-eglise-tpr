@@ -3,9 +3,66 @@ let membersData = [];
 let currentSortColumn = 'name';
 let currentSortDirection = 'asc';
 
+// Fonction pour afficher les membres dans le tableau
+function renderMembers(members) {
+    const tableBody = document.querySelector('#membersTable tbody');
+    tableBody.innerHTML = '';
+    
+    if (members.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center">Aucun membre trouvé.</td></tr>`;
+        return;
+    }
+
+    members.forEach(member => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${member.name || ''}</td>
+            <td>${member.first_names || ''}</td>
+            <td>${member.statut || 'Non renseigné'}</td>
+            <td>${member.age_group || 'Non renseigné'}</td>
+            <td>${member.neighborhood || 'Non renseigné'}</td>
+            <td>${member.profession || 'Non renseigné'}</td>
+            <td>${member.email || 'Non renseigné'}</td> <td>${member.phone || 'Non renseigné'}</td> `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Fonction pour trier et afficher les membres
+function loadAndSortMembers() {
+    const sortedMembers = [...membersData].sort((a, b) => {
+        const valA = a[currentSortColumn];
+        const valB = b[currentSortColumn];
+        
+        if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    renderMembers(sortedMembers);
+}
+
+// Fonction pour charger les membres depuis l'API
+async function fetchMembers() {
+    try {
+        const tableBody = document.querySelector('#membersTable tbody');
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center">Chargement des membres...</td></tr>`;
+        
+        const response = await fetch('/api/members');
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        membersData = await response.json();
+        loadAndSortMembers();
+    } catch (error) {
+        console.error("Erreur lors de la récupération des membres:", error);
+        const tableBody = document.querySelector('#membersTable tbody');
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Erreur de connexion.</td></tr>`;
+    }
+}
+
 // Attente du chargement complet du DOM
 document.addEventListener('DOMContentLoaded', async () => {
-
+    console.log("Le formulaire a été soumis !");
     // Initialisation des plugins
     $('.js-example-basic-single').select2();
     const phoneInput = document.querySelector("#phone");
@@ -17,59 +74,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     const memberForm = document.getElementById('memberForm');
+    console.log("Formulaire trouvé :", memberForm);
     const formMessage = document.getElementById('form-message');
     const searchInput = document.getElementById('searchInput');
-
-    // Fonction pour trier et afficher les membres
-    function loadAndSortMembers() {
-        const sortedMembers = [...membersData].sort((a, b) => {
-            const valA = a[currentSortColumn];
-            const valB = b[currentSortColumn];
-            
-            // Logique de tri simple
-            if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
-            if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
-            return 0;
-        });
-
-        const tableBody = document.querySelector('#membersTable tbody');
-        tableBody.innerHTML = '';
-
-        if (sortedMembers.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="7" class="text-center">Aucun membre inscrit.</td></tr>`;
-            return;
-        }
-
-        sortedMembers.forEach(member => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${member.name}</td>
-                <td>${member.first_names}</td>
-                <td>${member.statut || 'Non renseigné'}</td>
-                <td>${member.age_group}</td>
-                <td>${member.neighborhood || 'Non renseigné'}</td>
-                <td>${member.profession}</td>
-                <td>${member.phone || 'Non renseigné'}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
-
-    // Fonction pour charger les membres depuis l'API
-    async function fetchMembers() {
-        try {
-            const response = await fetch('/api/members'); // L'URL correcte
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP: ${response.status}`);
-            }
-            membersData = await response.json();
-            loadAndSortMembers();
-        } catch (error) {
-            console.error("Erreur lors de la récupération des membres:", error);
-            const tableBody = document.querySelector('#membersTable tbody');
-            tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Erreur de connexion.</td></tr>`;
-        }
-    }
 
     // Événement pour le tri du tableau
     document.querySelector('#membersTable thead').addEventListener('click', function(e) {
@@ -105,26 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
         });
         
-        // Afficher les membres filtrés
-        const tableBody = document.querySelector('#membersTable tbody');
-        tableBody.innerHTML = '';
-        if (filteredMembers.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="7" class="text-center">Aucun résultat trouvé.</td></tr>`;
-        } else {
-            filteredMembers.forEach(member => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${member.name}</td>
-                    <td>${member.first_names}</td>
-                    <td>${member.statut || 'Non renseigné'}</td>
-                    <td>${member.age_group}</td>
-                    <td>${member.neighborhood || 'Non renseigné'}</td>
-                    <td>${member.profession}</td>
-                    <td>${member.phone || 'Non renseigné'}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+        renderMembers(filteredMembers);
     });
 
     // Gestion de la soumission du formulaire
@@ -140,6 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             neighborhood: formData.get('neighborhood'),
             age_group: formData.get('age_group'),
             profession: formData.get('profession'),
+            email: memberForm.email.value,
             phone: fullNumber
         };
 

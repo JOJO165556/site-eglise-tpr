@@ -26,8 +26,8 @@
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6">
           <h1 class="text-center">Inscription des Membres</h1>
-          <form action="/members" method="POST" class="mb-5">
-            <div class="mb-3">
+          <form id="memberForm" class="mb-5">
+            <div id="form-message" class="mb-3">
               <label for="name" class="form-label">Nom :</label>
               <input
                 type="text"
@@ -133,6 +133,15 @@
               </select>
             </div>
             <div class="mb-3">
+              <label for="email" class="form-label">Email :</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+              />
+            </div>
+            <div class="mb-3">
               <label for="phone" class="form-label"
                 >Contact (Numéro de téléphone) :</label
               >
@@ -184,6 +193,9 @@
                   </th>
                   <th data-sort="profession">
                     Profession <i class="bi bi-sort-down-alt"></i>
+                  </th>
+                  <th data-sort="email">
+                    Email <i class="bi bi-sort-down-alt"></i>
                   </th>
                   <th data-sort="phone">
                     Contact <i class="bi bi-sort-down-alt"></i>
