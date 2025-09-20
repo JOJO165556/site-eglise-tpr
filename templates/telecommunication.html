@@ -39,9 +39,18 @@
     <main>
       <section class="container section-padding text-center">
         <h1 class="section-title">Notre mission : Restez connectés</h1>
-        <p class="lead">
-          Connectez-vous, où que vous soyez.
-        </p>
+        <p class="lead">Connectez-vous, où que vous soyez.</p>
+      </section>
+
+      <section class="container py-5">
+        <h2 class="section-title text-center mb-4">
+          Nos dernières vidéos YouTube
+        </h2>
+        <div
+          id="youtube-carousel"
+          class="carousel slide"
+          data-bs-ride="carousel"
+        ></div>
       </section>
 
       <section class="section-vision section-padding">
@@ -115,7 +124,7 @@
         <form
           class="row g-3 justify-content-center mt-3 contact-form"
           id="contactForm"
-          action="submit_form.php"
+          action="/api/contact"
           method="POST"
         >
           <div class="col-12 col-md-6 col-lg-4">
@@ -154,6 +163,7 @@
             </button>
           </div>
         </form>
+        <div id="form-message" class="mt-4"></div>
       </section>
     </main>
 
