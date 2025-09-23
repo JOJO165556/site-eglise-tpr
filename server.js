@@ -1,199 +1,169 @@
-const http = require("http");
-const fs = require("fs").promises;
+// --- MODULES & INITIALIZATION ---
+const express = require("express");
 const path = require("path");
-const serveStatic = require("serve-static");
-const mime = require("mime");
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const { createClient } = require("@supabase/supabase-js");
-const { URL } = require("url");
-require("dotenv").config();
+const fetch = require('node-fetch'); // Requis pour le proxy de Formspree
+
+// Charge les variables d'environnement du fichier .env
+require('dotenv').config();
+
+// Initialisation du serveur Express
+const app = express();
+const PORT = process.env.PORT || 5000;
 
 // Initialisation du client Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Définition des variables pour l'API YouTube, lues depuis .env
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-const YOUTUBE_CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID;
+// Variables d'authentification
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-const servePublic = serveStatic(path.join(__dirname, "static"), {
-    setHeaders: (res, path) => {
-        const mime = require("mime");
-        if (
-            mime.getType(path) === "text/css" ||
-            mime.getType(path) === "application/javascript"
-        ) {
-            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-            res.setHeader("X-Content-Type-Options", "nosniff");
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Sert les fichiers statiques (CSS, JS, images, etc.) du répertoire 'static'
+app.use(express.static(path.join(__dirname, "static")));
+
+// --- MIDDLEWARE D'AUTHENTIFICATION ---
+const authenticateToken = (req, res, next) => {
+    const token = req.cookies.token; // Le nom du cookie est 'token'
+    if (!token) {
+        return res.status(401).json({ error: "Accès non autorisé. Jeton manquant." });
+    }
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: "Jeton invalide ou expiré." });
         }
-    },
+        req.user = user;
+        next();
+    });
+};
+
+// --- ROUTES API PUBLIQUES ---
+
+// Route de connexion pour le panneau d'administration
+app.post("/api/login", (req, res) => {
+    const { username, password } = req.body;
+    if (username === ADMIN_USER && password === ADMIN_PASS) {
+        const token = jwt.sign({ username: ADMIN_USER }, JWT_SECRET, { expiresIn: '1h' });
+        res.cookie('token', token, { httpOnly: true, maxAge: 3600000, secure: process.env.NODE_ENV === 'production' });
+        return res.json({ success: true, message: "Connexion réussie." });
+    } else {
+        return res.status(401).json({ success: false, message: "Nom d'utilisateur ou mot de passe incorrect." });
+    }
 });
 
-function toTitleCase(str) {
-    if (!str) return "";
-    return str.replace(/\w\S*/g, function (txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-    });
-}
-
-function renderNotFoundPage(res) {
-    res.writeHead(404, {
-        "Content-Type": "text/html",
-        "X-Content-Type-Options": "nosniff",
-    });
-    res.end(`
-        <!DOCTYPE html>
-        <html lang="fr">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Page Indisponible</title>
-          <style>
-            body { font-family: sans-serif; text-align: center; padding-top: 50px; }
-            h1 { font-size: 2em; color: #333; }
-            p { font-size: 1.2em; color: #666; }
-          </style>
-        </head>
-        <body>
-          <h1>Oups ! Cette page n'est pas encore disponible.</h1>
-          <p>Nous travaillons sur son contenu. Revenez plus tard !</p>
-          <p><a href="/">Retour à la page d'accueil</a></p>
-        </body>
-        </html>
-    `);
-}
-
-async function renderHtml(res, file) {
-    const filePath = path.join(__dirname, "templates", file);
+// Route de proxy pour le formulaire de contact (Formspree)
+app.post('/api/contact-form', async (req, res) => {
+    const formData = req.body;
+    const formspreeUrl = 'https://formspree.io/f/xpwjgaow'; // Your Formspree URL
     try {
-        const data = await fs.readFile(filePath);
-        res.writeHead(200, {
-            "Content-Type": "text/html",
-            "X-Content-Type-Options": "nosniff",
+        const response = await fetch(formspreeUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
         });
-        res.end(data);
-    } catch (err) {
-        renderNotFoundPage(res);
-    }
-}
 
-const server = http.createServer(async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') {
-        res.writeHead(204);
-        res.end();
-        return;
-    }
-    
-    try {
-        const { pathname } = new URL(req.url, `http://${req.headers.host}`);
-
-        // 1. GESTION DES REQUÊTES API
-        if (pathname.startsWith("/api/")) {
-            if (req.method === "GET") {
-                switch (pathname) {
-                    case "/api/members":
-                        // Code pour l'API des membres
-                        const { data: members, error: membersError } = await supabase.from('members').select('*').order('name');
-                        if (membersError) {
-                            console.error("❌ Erreur Supabase:", membersError);
-                            res.writeHead(500, { "Content-Type": "application/json" });
-                            res.end(JSON.stringify({ error: membersError.message }));
-                            return;
-                        }
-                        res.writeHead(200, { "Content-Type": "application/json" });
-                        res.end(JSON.stringify(members));
-                        break;
-                    case "/api/youtube-videos":
-                        // Code pour l'API YouTube
-                        if (!YOUTUBE_API_KEY || !YOUTUBE_CHANNEL_ID) {
-                            console.error("❌ Erreur: Clé API YouTube ou ID de chaîne manquant dans le fichier .env");
-                            res.writeHead(500, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({ error: "Erreur de configuration." }));
-                            return;
-                        }
-                        
-                        const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${YOUTUBE_CHANNEL_ID}&key=${YOUTUBE_API_KEY}`;
-                        const channelResponse = await fetch(channelUrl);
-                        if (!channelResponse.ok) {
-                            const errorText = await channelResponse.text();
-                            console.error(`❌ Erreur API YouTube (canal): ${channelResponse.status} - ${errorText}`);
-                            res.writeHead(channelResponse.status, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({ error: `Erreur API YouTube: ${channelResponse.status}` }));
-                            return;
-                        }
-                        
-                        const channelData = await channelResponse.json();
-                        const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
-
-                        const videosUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=10&playlistId=${uploadsPlaylistId}&key=${YOUTUBE_API_KEY}`;
-                        const videosResponse = await fetch(videosUrl);
-                        if (!videosResponse.ok) {
-                            const errorText = await videosResponse.text();
-                            console.error(`❌ Erreur API YouTube (vidéos): ${videosResponse.status} - ${errorText}`);
-                            res.writeHead(videosResponse.status, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({ error: `Erreur API YouTube: ${videosResponse.status}` }));
-                            return;
-                        }
-                        
-                        const videosData = await videosResponse.json();
-                        res.writeHead(200, { "Content-Type": "application/json" });
-                        res.end(JSON.stringify(videosData));
-                        break;
-                    default:
-                        renderNotFoundPage(res);
-                        break;
-                }
-            } else if (req.method === "POST") {
-                // ... (votre code pour le POST)
-            } else {
-                renderNotFoundPage(res);
-            }
-        // 2. GESTION DES FICHIERS STATIQUES & PAGES HTML
+        if (response.ok) {
+            res.status(200).json({ success: true, message: 'Message sent successfully.' });
         } else {
-            switch (pathname) {
-                case "/":
-                    await renderHtml(res, "index.html");
-                    break;
-                case "/don":
-                    await renderHtml(res, "don.html");
-                    break;
-                case "/entretien":
-                    await renderHtml(res, "entretien.html");
-                    break;
-                case "/enfants":
-                    await renderHtml(res, "enfants.html");
-                    break;
-                case "/jeunesse":
-                    await renderHtml(res, "jeunesse.html");
-                    break;
-                case "/jeunesse_don":
-                    await renderHtml(res, "jeunesse_don.html");
-                    break;
-                case "/telecommunication":
-                    await renderHtml(res, "telecommunication.html");
-                    break;
-                case "/members":
-                    await renderHtml(res, "members.html");
-                    break;
-                default:
-                    servePublic(req, res, () => {
-                        renderNotFoundPage(res);
-                    });
-                    break;
-            }
+            // Log the error from Formspree for debugging on the server
+            const result = await response.json();
+            console.error('Formspree API Error:', result);
+            res.status(response.status).json({ success: false, message: result.errors[0]?.message || 'Formspree error' });
         }
-    } catch (err) {
-        console.error("Erreur interne du serveur:", err);
-        res.writeHead(500, { "Content-Type": "text/plain" });
-        res.end("Erreur interne du serveur");
+    } catch (error) {
+        console.error('Network or server error during form submission:', error);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () =>
-    console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`)
-);
+// Route pour récupérer les vidéos YouTube depuis Supabase
+app.get("/api/youtube-videos", async (req, res) => {
+    const { data, error } = await supabase.from('youtube_videos').select('*').order('date', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+// Route pour récupérer les événements du calendrier
+app.get("/api/events", async (req, res) => {
+    const { data, error } = await supabase.from('events').select('*').order('date', { ascending: true });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+// Route pour récupérer les questions du quiz
+app.get("/api/quiz-questions", async (req, res) => {
+    const { data, error } = await supabase.from('quiz_questions').select('*');
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+// --- ROUTES API PROTÉGÉES (ADMIN) ---
+
+// Route de déconnexion
+app.post('/api/logout', (req, res) => {
+    // Clear the cookie named 'token' that was set during login
+    res.clearCookie('token');
+
+    // Respond with a success message in JSON format
+    res.status(200).json({ message: 'Déconnexion réussie' });
+});
+
+// Route pour récupérer les membres (requiert une authentification)
+app.get("/api/admin/members", authenticateToken, async (req, res) => {
+    // Récupère les paramètres de tri depuis l'URL
+    const { sortColumn = 'name', sortDirection = 'asc' } = req.query;
+
+    const { data: members, error: membersError } = await supabase
+        .from('members')
+        .select('*')
+        .order(sortColumn, { ascending: sortDirection === 'asc' });
+
+    if (membersError) return res.status(500).json({ error: membersError.message });
+    res.json(members);
+});
+
+// Route pour ajouter un membre (requiert une authentification)
+app.post("/api/admin/members", authenticateToken, async (req, res) => {
+    const { data, error } = await supabase.from('members').insert([req.body]).select();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true, member: data[0] });
+});
+
+// Route pour supprimer un membre (requiert une authentification)
+app.delete("/api/admin/members/:id", authenticateToken, async (req, res) => {
+    const { error } = await supabase.from('members').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true, message: 'Membre supprimé.' });
+});
+
+// --- ROUTES POUR LES PAGES HTML ---
+
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "index.html")));
+app.get("/don", (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "don.html")));
+app.get("/entretien", (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "entretien.html")));
+app.get("/enfants", (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "enfants.html")));
+app.get("/jeunesse", (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "jeunesse.html")));
+app.get("/jeunesse_don", (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "jeunesse_don.html")));
+app.get("/telecommunication", (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "telecommunication.html")));
+app.get("/login", (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "login.html")));
+app.get("/dashboard", authenticateToken, (req, res) => res.sendFile(path.join(__dirname, "static", "templates", "dashboard.html")));
+
+// Route attrape-tout pour les erreurs 404
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'static', 'templates', '404.html'));
+});
+
+// --- DÉMARRAGE DU SERVEUR ---
+app.listen(PORT, () => console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`));

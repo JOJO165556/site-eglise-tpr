@@ -1,11 +1,12 @@
 {
   "name": "projet",
   "version": "1.0.0",
-  "description": "",
+  "description": "Site web de l'église TPR",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "npm rebuild sqlite3 --target_arch=x64 --target_platform=linux"
+    "postinstall": "npm rebuild sqlite3 --target_arch=x64 --target_platform=linux",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -14,11 +15,24 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
     "axios": "^1.11.0",
+    "body-parser": "^2.2.0",
+    "cookie": "^1.0.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.2",
+    "express": "^5.1.0",
     "fedapay": "^1.2.5",
+    "jsonwebtoken": "^9.0.2",
     "mime": "^3.0.0",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.6.7",
     "nodemailer": "^7.0.6",
     "serve-static": "^2.2.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JOJO165556/site-eglise-tpr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JOJO165556/site-eglise-tpr/issues"
+  },
+  "homepage": "https://github.com/JOJO165556/site-eglise-tpr#readme"
 }

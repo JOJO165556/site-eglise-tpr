@@ -7,7 +7,7 @@ async function envoyerRecu(email, nom, montant, message) {
         service: "gmail",
         auth: {
             user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS, // mot de passe d'application Gmail
+            pass: process.env.EMAIL_PASS, 
         },
     });
 

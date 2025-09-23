@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administration - Annuaire TPR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Tableau de bord</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutButton">Déconnexion</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <h2 class="text-center mb-4">Gestion des membres</h2>
+
+        <div class="card shadow-lg mb-5">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Ajouter un nouveau membre</h5>
+            </div>
+            <div class="card-body">
+                <form id="memberForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Nom <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="first_names" class="form-label">Prénoms <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="first_names" name="first_names" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="statut" class="form-label">Statut</label>
+                            <select id="statut" name="statut" class="js-example-basic-single form-control">
+                                <option value="Frère">Frère</option>
+                                <option value="Sœur">Sœur</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="age_group" class="form-label">Tranche d'âge <span
+                                    class="text-danger">*</span></label>
+                            <select id="age_group" name="age_group" class="form-control" required>
+                                <option value="">Choisir...</option>
+                                <option value="0-12 ans">0-12 ans (Enfants)</option>
+                                <option value="13-17 ans">13-17 ans (Adolescents)</option>
+                                <option value="18-24 ans">18-24 ans (Jeunes Adultes)</option>
+                                <option value="25-59 ans">25-59 ans (Adultes)</option>
+                                <option value="60 ans et plus">
+                                    60 ans et plus (Seniors)
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="neighborhood" class="form-label">Quartier</label>
+                            <input type="text" class="form-control" id="neighborhood" name="neighborhood" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="profession" class="form-label">Profession <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="profession" name="profession" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" />
+                        </div>
+                    </div>
+                    <div id="form-message" class="mt-3"></div>
+                    <button type="submit" class="btn btn-primary mt-4 w-100 py-2">
+                        Enregistrer le membre
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-lg">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Liste des membres</h5>
+                <input type="text" id="searchInput" class="form-control w-25" placeholder="Rechercher..." />
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="membersTable" class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th id="sortByName" class="sortable">
+                                    Nom
+                                    <span id="sort-icon" class="ms-2"></span>
+                                </th>
+                                <th>Prénoms</th>
+                                <th>Statut</th>
+                                <th>Quartier</th>
+                                <th>Groupe d'âge</th>
+                                <th>Profession</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    Chargement des membres...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <div class="modal fade" id="editMemberModal" tabindex="-1" aria-labelledby="editMemberModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMemberModalLabel">Modifier un membre</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editMemberForm">
+                        <input type="hidden" id="edit-member-id">
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="edit-name" class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-name" name="name" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-first_names" class="form-label">Prénoms <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-first_names" name="first_names"
+                                    required />
+                            </div>
+                            <div class="col-md-6">
+                                    <label for="edit-statut" class="form-label">Statut</label>
+                                    <select id="edit-statut" name="statut" class="js-example-basic-single form-control">
+                                            <option value="">Choisir...</option>
+                                            <option value="Frère">Frère</option>
+                                            <option value="Sœur">Sœur</option>
+                                        </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-age_group" class="form-label">Tranche d'âge <span
+                                        class="text-danger">*</span></label>
+                                <select id="edit-age_group" name="age_group" class="form-control" required>
+                                    <option value="0-12 ans">0-12 ans (Enfants)</option>
+                                    <option value="13-17 ans">13-17 ans (Adolescents)</option>
+                                    <option value="18-24 ans">18-24 ans (Jeunes Adultes)</option>
+                                    <option value="25-59 ans">25-59 ans (Adultes)</option>
+                                    <option value="60 ans et plus">60 ans et plus (Seniors)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-neighborhood" class="form-label">Quartier</label>
+                                <input type="text" class="form-control" id="edit-neighborhood" name="neighborhood" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-profession" class="form-label">Profession <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-profession" name="profession"
+                                    required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="edit-email" name="email" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="edit-phone" name="phone" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <div id="edit-form-message" class="me-auto"></div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary" form="editMemberForm">Enregistrer les
+                        modifications</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/dashboard.js"></script>
+</body>
+
+</html>
