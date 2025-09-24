@@ -100,24 +100,15 @@ h1, h2, h3, .display-4, .display-5 {
 }
 
 .hero-section {
+    padding: 50px 0;
     position: relative;
-    height: 100vh;
+    height: 600px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    /* La couleur du texte est ajustée pour le fond clair */
     color: var(--text-dark-color);
-    
-    /* Retire l'image et le dégradé de fond */
-    background-image: none;
-    background-color: var(--bg-light-color); /* Utilise la couleur de fond de la page */
-    
-    /* Retire les propriétés liées à l'image */
-    background-size: auto;
-    background-position: center;
-    background-repeat: no-repeat;
-    animation: none;
+    background-color: var(--bg-light-color);
 }
 
 .hero-text-container {
@@ -547,4 +538,18 @@ h1, h2, h3, .display-4, .display-5 {
 /* Ajoute un espace à gauche au deuxième bouton nav-item-cta */
 .nav-item-cta + .nav-item-cta {
     margin-left: 20px;
+}
+
+/* ==================== Styles supplémentaires ==================== */
+.highlight {
+    background-color: #fce4ec; /* Rose clair */
+    border-radius: 5px;
+    padding: 2px;
+    transition: background-color 0.5s ease;
+}
+
+.scrollable-menu {
+    height: auto;
+    max-height: 250px;
+    overflow-x: hidden;
 }

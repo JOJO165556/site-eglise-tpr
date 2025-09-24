@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bibliothèque</title>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Bibliothèque</h1>
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="bible-tab" data-bs-toggle="tab" data-bs-target="#bible-content"
+                    type="button" role="tab">Lire la Bible</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="brochures-tab" data-bs-toggle="tab" data-bs-target="#brochures-content"
+                    type="button" role="tab">Brochures</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="bible-content" role="tabpanel" aria-labelledby="bible-tab">
+                <div class="row text-center mb-4 mt-4">
+                    <div class="col-md-4 mb-2">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle w-100" type="button" id="bookDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                Sélectionnez un livre
+                            </button>
+                            <ul class="dropdown-menu scrollable-menu" aria-labelledby="bookDropdown" id="bookList">
+                                </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle w-100" type="button" id="chapterDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                Chapitre
+                            </button>
+                            <ul class="dropdown-menu scrollable-menu" aria-labelledby="chapterDropdown" id="chapterList">
+                                </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle w-100" type="button" id="verseDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                Verset
+                            </button>
+                            <ul class="dropdown-menu scrollable-menu" aria-labelledby="verseDropdown" id="verseList">
+                                </ul>
+                        </div>
+                    </div>
+                </div>
+                <div id="bibleErrorMessage" class="text-danger text-center"></div>
+                <div id="verseResult" class="card mt-4 p-4 d-none">
+                    <div id="verseText"></div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="brochures-content" role="tabpanel" aria-labelledby="brochures-tab">
+                <div class="row mt-4" id="brochuresList">
+                    </div>
+                <div id="brochureErrorMessage" class="text-danger text-center mt-3"></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/bibliotheque.js"></script>
+</body>
+
+</html>

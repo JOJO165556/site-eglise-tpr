@@ -2,10 +2,32 @@
 // --- GESTION DES DONNÉES ET ÉTATS LOCAUX ---
 let currentDate = new Date();
 let currentQuestionIndex = 0;
-let events = []; // Sera rempli par les données de l'API
+
+// Événements du calendrier (données statiques)
+let events = [
+    {
+        "title": "Rencontre de Jeunes",
+        "description": "Thème : la vie en Christ.",
+        "date": "2025-09-27T10:00:00Z",
+        "link": "https://eglise-test.com/jeunes"
+    },
+    {
+        "title": "Culte des familles",
+        "description": "Un service spécial pour les jeunes et les moins jeunes.",
+        "date": "2025-10-12T11:00:00Z",
+        "link": "https://eglise-test.com/familles"
+    },
+    {
+        "title": "Journée de prière",
+        "description": "Un moment de communion et d'intercession.",
+        "date": "2025-10-25T19:00:00Z",
+        "link": "https://eglise-test.com/priere"
+    }
+];
+
 let quizQuestions = []; // Sera rempli par les données de l'API
 
-// Pensées du jour (ces données peuvent rester statiques si vous ne les gérez pas via le back-end)
+// Pensées du jour (ces données peuvent rester statiques)
 const quotes = [
     "La foi est une ferme assurance des choses qu'on espère, une démonstration de celles qu'on ne voit pas.",
     "Tout ce que vous demandez avec foi par la prière, vous le recevrez.",
@@ -17,23 +39,7 @@ const quotes = [
 // --- FONCTIONS DE RÉCUPÉRATION DES DONNÉES (API) ---
 
 /**
- * Récupère les événements depuis l'API du serveur et met à jour le calendrier.
- */
-const fetchEvents = async () => {
-    try {
-        const response = await fetch('/api/events');
-        if (!response.ok) {
-            throw new Error('Erreur de chargement des événements');
-        }
-        events = await response.json();
-        renderCalendar();
-    } catch (error) {
-        console.error('Erreur lors du chargement des événements:', error);
-    }
-};
-
-/**
- * Récupère les questions du quiz depuis l'API du serveur et démarre le quiz.
+ * Récupère les questions du quiz depuis l'API du serveur, les mélange et démarre le quiz.
  */
 const fetchQuizQuestions = async () => {
     try {
@@ -42,12 +48,16 @@ const fetchQuizQuestions = async () => {
             throw new Error('Erreur de chargement du quiz');
         }
         const data = await response.json();
-        startQuiz(data);
+
+        // Mélange les questions pour un ordre aléatoire
+        const shuffledData = data.sort(() => Math.random() - 0.5);
+
+        startQuiz(shuffledData);
     } catch (error) {
         console.error('Erreur lors du chargement du quiz:', error);
         const quizContainer = document.getElementById('quiz-container');
         if (quizContainer) {
-            quizContainer.innerHTML = "<p>Désolé, le quiz n'a pas pu être chargé.</p>";
+            quizContainer.innerHTML = "<p>Désolé, le quiz n'a pas pu être chargé. Veuillez réessayer plus tard.</p>";
         }
     }
 };
@@ -55,7 +65,7 @@ const fetchQuizQuestions = async () => {
 // --- GESTION DU CALENDRIER ---
 
 /**
- * Affiche le calendrier du mois courant.
+ * Affiche le calendrier du mois courant, y compris les noms de jours et les numéros.
  */
 const renderCalendar = () => {
     const calendarElement = document.getElementById('calendar');
@@ -105,7 +115,7 @@ const renderCalendar = () => {
         dayCard.appendChild(cardBody);
 
         const formattedDate = `${fullDate.getFullYear()}-${(fullDate.getMonth() + 1).toString().padStart(2, '0')}-${fullDate.getDate().toString().padStart(2, '0')}`;
-        const dayEvents = events.filter(event => event.date.slice(0, 10) === formattedDate); // Correction pour gérer le format de date
+        const dayEvents = events.filter(event => new Date(event.date).toISOString().slice(0, 10) === formattedDate);
 
         if (dayEvents.length > 0) {
             if (fullDate < today) {
@@ -189,11 +199,17 @@ const showQuestion = () => {
     const optionsContainer = document.getElementById('quiz-options');
     const resultContainer = document.getElementById('quiz-result');
 
-    questionContainer.textContent = quizQuestions[currentQuestionIndex].question;
+    const currentQuestion = quizQuestions[currentQuestionIndex];
+    if (!currentQuestion) {
+        console.error("Erreur: Question non trouvée à l'index " + currentQuestionIndex);
+        return;
+    }
+
+    questionContainer.textContent = currentQuestion.question;
     optionsContainer.innerHTML = '';
     resultContainer.textContent = '';
 
-    quizQuestions[currentQuestionIndex].options.forEach(option => {
+    currentQuestion.options.forEach(option => {
         const button = document.createElement('button');
         button.className = 'btn btn-outline-secondary';
         button.textContent = option;
@@ -210,7 +226,8 @@ const checkAnswer = (selectedOption) => {
     const options = document.querySelectorAll('#quiz-options button');
     const resultContainer = document.getElementById('quiz-result');
     const nextButton = document.getElementById('next-question-btn');
-    const correctAnswer = quizQuestions[currentQuestionIndex].answer;
+    const currentQuestion = quizQuestions[currentQuestionIndex];
+    const correctAnswer = currentQuestion.answer;
 
     if (selectedOption === correctAnswer) {
         resultContainer.textContent = "Correct ! 🎉";
@@ -218,6 +235,11 @@ const checkAnswer = (selectedOption) => {
     } else {
         resultContainer.textContent = `Incorrect. La bonne réponse est : ${correctAnswer}`;
         resultContainer.style.color = 'red';
+
+        const wrongButton = Array.from(options).find(btn => btn.textContent === selectedOption);
+        if (wrongButton) {
+            wrongButton.classList.add('btn-danger');
+        }
     }
 
     options.forEach(button => {
@@ -271,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (nextQuestionBtn) {
         nextQuestionBtn.addEventListener('click', nextQuestion);
     }
-    
+
     // Liez les événements de la modale
     const modal = document.getElementById('eventModal');
     const closeBtn = document.getElementsByClassName('close-btn')[0];
@@ -283,9 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
             hideEventModal();
         }
     };
-    
+
     // Charge toutes les données et rend l'interface
-    fetchEvents();
-    fetchQuizQuestions();
+    renderCalendar();
+    fetchQuizQuestions(); // Cet appel charge les questions depuis l'API
     displayDailyQuote();
 });
