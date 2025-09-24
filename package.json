@@ -14,15 +14,17 @@
   "type": "commonjs",
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
-    "axios": "^1.11.0",
+    "axios": "^1.12.2",
     "body-parser": "^2.2.0",
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "fedapay": "^1.2.5",
+    "googleapis": "^160.0.0",
     "jsonwebtoken": "^9.0.2",
     "mime": "^3.0.0",
+    "node-cron": "^4.2.1",
     "node-fetch": "^2.6.7",
     "nodemailer": "^7.0.6",
     "serve-static": "^2.2.0"

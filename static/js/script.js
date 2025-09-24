@@ -1,56 +1,40 @@
 // script.js
 
-// ==================== Déclarations et fonctions globales pour la pagination YouTube ====================
-// Ces variables et fonctions sont au début du fichier (scope global)
-// pour être accessibles par toutes les autres fonctions du script.
-let currentHomePageToken = "";
-let nextHomePageToken = "";
-let previousHomePageToken = "";
+// ==================== Déclarations et fonctions globales pour la pagination vidéo ====================
+let currentPage = 1;
 let currentSearchQuery = "";
-let currentSortOrder = "date"; // Tri par défaut à la date pour une meilleure expérience
+let currentSortOrder = "date"; // 'date' ou 'title'
 
-// Fonction pour mettre à jour l'état des boutons de pagination (désactivés ou actifs)
-function updatePaginationButtons() {
+// Fonction principale asynchrone pour récupérer et afficher les vidéos
+async function fetchVideos() {
+    const videoGridContainer = document.getElementById("videos-grid");
+    const loadingMessage = document.getElementById("loadingMessageHome");
     const prevPageBtn = document.getElementById("prevPageBtnHome");
     const nextPageBtn = document.getElementById("nextPageBtnHome");
-    if (prevPageBtn) prevPageBtn.disabled = !previousHomePageToken;
-    if (nextPageBtn) nextPageBtn.disabled = !nextHomePageToken;
-}
 
-// Fonction asynchrone pour récupérer et afficher les vidéos YouTube
-async function fetchYouTubeVideos() {
-    const videoGridContainer = document.getElementById("youtube-videos-grid");
-    const loadingMessage = document.getElementById("loadingMessageHome");
-
-    // Vérifie si le conteneur existe avant de continuer
     if (!videoGridContainer) {
         console.warn(
-            "Element #youtube-videos-grid not found, YouTube videos cannot be displayed on this page."
+            "Element #videos-grid not found, videos cannot be displayed on this page."
         );
         return;
     }
 
-    // Affiche un message de chargement et nettoie le conteneur existant
     if (loadingMessage) {
         loadingMessage.innerHTML = `<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div><p class="mt-2">Chargement des vidéos...</p>`;
         loadingMessage.style.display = "block";
     }
-    videoGridContainer.innerHTML = "";
+    videoGridContainer.innerHTML = ""; // Nettoie le conteneur avant de charger
 
     try {
-        // Construit l'URL de l'API avec les paramètres de recherche, tri et pagination
-        const urlParams = new URLSearchParams();
-        urlParams.append("maxResults", 9); // Nombre de vidéos par page
-        urlParams.append("sort", currentSortOrder);
-
-        if (currentHomePageToken) {
-            urlParams.append("pageToken", currentHomePageToken);
-        }
+        const params = new URLSearchParams({
+            page: currentPage,
+            sort: currentSortOrder
+        });
         if (currentSearchQuery) {
-            urlParams.append("query", currentSearchQuery);
+            params.append("search", currentSearchQuery);
         }
 
-        const response = await fetch(`/api/youtube-videos?${urlParams.toString()}`);
+        const response = await fetch(`/api/videos?${params.toString()}`);
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -58,24 +42,16 @@ async function fetchYouTubeVideos() {
         }
         const data = await response.json();
 
-        // Masque le message de chargement après la réussite de la requête
         if (loadingMessage) loadingMessage.style.display = "none";
-
-        // Stocke les tokens pour la gestion de la pagination
-        nextHomePageToken = data.nextPageToken || "";
-        previousHomePageToken = data.prevPageToken || "";
 
         if (data.items && data.items.length > 0) {
             data.items.forEach((item) => {
-                // Extrait l'ID de la vidéo (gère les deux structures de réponse de l'API YouTube)
-                const videoId = item.id.videoId || item.snippet.resourceId.videoId;
-                const videoTitle = item.snippet.title;
-                const thumbnailUrl = item.snippet.thumbnails.high.url;
+                const videoId = item.video_id;
+                const videoTitle = item.title;
+                const thumbnailUrl = item.thumbnail_url;
                 const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-
-                // Crée la carte vidéo pour l'affichage en grille
                 const col = document.createElement("div");
-                col.className = "col"; // Classe Bootstrap pour la grille
+                col.className = "col";
                 col.innerHTML = `
                     <div class="card card-custom h-100">
                         <a href="${videoUrl}" target="_blank" rel="noopener noreferrer">
@@ -90,90 +66,24 @@ async function fetchYouTubeVideos() {
                 videoGridContainer.appendChild(col);
             });
         } else {
-            // Affiche un message si aucune vidéo n'est trouvée
-            videoGridContainer.innerHTML =
-                '<p class="text-center text-muted">Aucune vidéo trouvée.</p>';
+            videoGridContainer.innerHTML = '<p class="text-center text-muted">Aucune vidéo trouvée.</p>';
         }
-        updatePaginationButtons(); // Met à jour l'état des boutons après le rendu
-    } catch (error) {
-        console.error("Erreur lors de la récupération des vidéos YouTube:", error);
 
-        // Affiche un message d'erreur et désactive les boutons en cas d'échec
-        if (loadingMessage) {
-            loadingMessage.innerHTML =
-                '<p class="text-center text-danger">Impossible de charger les vidéos. Veuillez réessayer plus tard.</p>';
-            loadingMessage.style.display = "block";
-        }
-        updatePaginationButtons(); // Désactive les boutons
+        // Met à jour l'état des boutons de pagination
+        if (prevPageBtn) prevPageBtn.disabled = data.prevPage === null;
+        if (nextPageBtn) nextPageBtn.disabled = data.nextPage === null;
+
+    } catch (error) {
+        console.error("Erreur lors de la récupération des vidéos:", error);
+        if (loadingMessage) loadingMessage.innerHTML = '<p class="text-center text-danger">Impossible de charger les vidéos. Veuillez réessayer plus tard.</p>';
+        if (prevPageBtn) prevPageBtn.disabled = true;
+        if (nextPageBtn) nextPageBtn.disabled = true;
     }
 }
 
 // ==================== Attente du chargement complet du DOM ====================
 document.addEventListener("DOMContentLoaded", () => {
-    // ==================== 5. Chargement des membres via API (JSON) ====================
-    // Cette fonction est appelée uniquement si l'élément "totalMembersCount" ou "members-list" est présent
-    async function loadMembersData() {
-        const totalMembersElement = document.getElementById("totalMembersCount");
-        const tableBody = document.querySelector("#members-list tbody");
-
-        // Ne tente de charger les données que si les éléments existent sur la page
-        if (!totalMembersElement && !tableBody) {
-            // console.log("Éléments des membres non trouvés, skip le chargement des données des membres.");
-            return;
-        }
-
-        try {
-            const response = await fetch("/api/members");
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP: ${response.status}`);
-            }
-            const members = await response.json();
-
-            if (totalMembersElement) {
-                totalMembersElement.textContent = members.length;
-            }
-
-            if (tableBody) {
-                const lastTenMembers = members.slice(0, 10);
-                tableBody.innerHTML = "";
-
-                if (lastTenMembers.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="7" class="text-center">Aucun membre inscrit pour le moment.</td></tr>`;
-                } else {
-                    lastTenMembers.forEach((member) => {
-                        const row = document.createElement("tr");
-                        const cells = [
-                            member.statut || "Non renseigné",
-                            member.name,
-                            member.first_names,
-                            member.neighborhood || "Non renseigné",
-                            member.age_group,
-                            member.profession,
-                            member.phone || "Non renseigné",
-                        ];
-                        cells.forEach((cellText) => {
-                            const td = document.createElement("td");
-                            td.textContent = cellText;
-                            row.appendChild(td);
-                        });
-                        tableBody.appendChild(row);
-                    });
-                }
-            }
-        } catch (error) {
-            console.error(
-                "Erreur lors du chargement des données des membres:",
-                error
-            );
-            if (tableBody) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Erreur de connexion.</td></tr>`;
-            }
-        }
-    }
-
-    // Exécute la fonction pour charger les données des membres si les éléments sont présents
-    loadMembersData();
-
+    
     // ==================== 0. Effet texte automatique (machine à écrire) ====================
     const text = "BIENVENUE DANS LA MAISON DU SEIGNEUR...";
     const target = document.getElementById("autoText");
@@ -253,7 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
         contactForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            // Récupère explicitement les valeurs des champs
             const formData = {
                 name: document.getElementById("nom").value,
                 email: document.getElementById("email").value,
@@ -299,54 +208,79 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ==================== Intégration YouTube API : Événements pour les boutons de pagination, recherche et tri ====================
+    // ==================== Événements pour la recherche et le tri des vidéos ====================
+
+    // Fonction pour le debouncing
+    function debounce(func, delay) {
+        let timeoutId;
+        return (...args) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
+    // Événement pour le champ de recherche
+    const searchInput = document.getElementById("video-search-input");
+    // Crée une version debounced de la fonction de recherche
+    const debouncedSearch = debounce(() => {
+        currentPage = 1; // Réinitialise la pagination pour une nouvelle recherche
+        fetchVideos();
+    }, 300); // Délai de 300ms
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (event) => {
+            currentSearchQuery = event.target.value.trim(); // Met à jour la variable globale
+            debouncedSearch(); // Appelle la fonction debounced
+        });
+    }
+    
+    // Événement pour le bouton de recherche (si présent)
+    const searchButton = document.getElementById("search-button"); // Assurez-vous d'avoir un id="search-button" dans votre HTML
+    if (searchButton) {
+        searchButton.addEventListener("click", () => {
+            currentSearchQuery = searchInput.value.trim(); // Met à jour la variable globale avec la valeur actuelle
+            currentPage = 1; // Réinitialise la pagination
+            fetchVideos(); // Lance la recherche immédiatement sans debounce pour le bouton
+        });
+    }
+
+    // Événement pour le tri
+    const sortSelect = document.getElementById("video-sort-select");
+    if (sortSelect) {
+        sortSelect.addEventListener("change", () => {
+            currentSortOrder = sortSelect.value;
+            currentPage = 1; // Réinitialise la pagination pour un nouveau tri
+            fetchVideos();
+        });
+    }
+
+    // Événements pour les boutons de pagination
     const prevPageBtn = document.getElementById("prevPageBtnHome");
     const nextPageBtn = document.getElementById("nextPageBtnHome");
-    const searchForm = document.getElementById("video-search-form");
-    const searchInput = document.getElementById("video-search-input");
-    const sortSelect = document.getElementById("video-sort-select");
 
     if (prevPageBtn) {
-        prevPageBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (previousHomePageToken) {
-                currentHomePageToken = previousHomePageToken;
-                fetchYouTubeVideos();
+        prevPageBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchVideos();
             }
         });
     }
 
     if (nextPageBtn) {
-        nextPageBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (nextHomePageToken) {
-                currentHomePageToken = nextHomePageToken;
-                fetchYouTubeVideos();
+        nextPageBtn.addEventListener("click", () => {
+            if (!nextPageBtn.disabled) {
+                currentPage++;
+                fetchVideos();
             }
         });
     }
 
-    if (searchForm) {
-        searchForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            currentSearchQuery = searchInput.value;
-            currentHomePageToken = ""; // Réinitialise la pagination pour une nouvelle recherche
-            fetchYouTubeVideos();
-        });
-    }
-
-    if (sortSelect) {
-        sortSelect.addEventListener("change", () => {
-            currentSortOrder = sortSelect.value;
-            currentHomePageToken = ""; // Réinitialise la pagination pour le nouveau tri
-            fetchYouTubeVideos();
-        });
-    }
-
-    // Le chargement initial des vidéos YouTube se fait ici si les éléments sont présents
-    // C'est important de le faire après avoir défini tous les listeners.
-    const youtubeGridExists = document.getElementById("youtube-videos-grid");
-    if (youtubeGridExists) {
-        fetchYouTubeVideos();
+    // Appel initial au chargement de la page pour afficher les vidéos
+    const videoGridExists = document.getElementById("videos-grid");
+    if (videoGridExists) {
+        fetchVideos();
     }
 });
