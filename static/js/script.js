@@ -1,9 +1,7 @@
-// script.js
-
 // ==================== Déclarations et fonctions globales pour la pagination vidéo ====================
 let currentPage = 1;
 let currentSearchQuery = "";
-let currentSortOrder = "date"; // 'date' ou 'title'
+let currentSortOrder = "date";
 
 // Fonction principale asynchrone pour récupérer et afficher les vidéos
 async function fetchVideos() {
@@ -81,9 +79,91 @@ async function fetchVideos() {
     }
 }
 
+// ==================== FONCTIONS DE GESTION DU LIVE STREAM YOUTUBE ====================
+
+/**
+ * Affiche le lecteur YouTube et met à jour le message de statut en mode "EN DIRECT".
+ */
+function displayLivePlayer(container, message, url) {
+    if (container) {
+        // Crée le div parent pour gérer le ratio
+        const ratioWrapper = document.createElement('div');
+        ratioWrapper.className = 'ratio ratio-16x9';
+
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.title = "Diffusion en Direct";
+        iframe.frameBorder = 0;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        iframe.allowFullscreen = true;
+
+        ratioWrapper.appendChild(iframe);
+        container.innerHTML = '';
+        container.appendChild(ratioWrapper);
+        container.style.display = 'block';
+    }
+
+    if (message) {
+        message.textContent = "Le direct est actif ! Joignez-vous à nous ! 🎉";
+        message.classList.remove('alert-info', 'alert-warning', 'alert-danger');
+        message.classList.add('alert-success'); // Vert pour le succès
+        message.style.display = 'block';
+    }
+}
+
+/**
+ * Fonction principale: Vérifie l'état du direct YouTube.
+ */
+const checkLiveStatus = () => {
+    const liveContainer = document.getElementById('live-player-container');
+    const statusMessage = document.getElementById('live-status-message');
+
+    // CONTRÔLE CRITIQUE: Sortie si les conteneurs DOM sont manquants
+    if (!liveContainer || !statusMessage) {
+        console.error("Erreur critique: Le conteneur du lecteur ou le message de statut est manquant dans le HTML.");
+        return;
+    }
+
+    // Simule la récupération de l'ID de chaîne
+    const channelId = window.APP_SETTINGS ? window.APP_SETTINGS.YOUTUBE_CHANNEL_ID : 'FALLBACK_ID_SI_ERREUR';
+
+    // *** REMPLACEZ 'false' par votre logique d'API réelle pour obtenir le statut ***
+    const isLive = false;
+    // ******************************************************************************
+
+    // 1. Vérification de l'ID de la chaîne (Erreur de configuration)
+    if (!channelId || channelId === 'FALLBACK_ID_SI_ERREUR') {
+        console.error("Erreur: L'ID de chaîne YouTube n'a pas été injecté par le serveur.");
+        statusMessage.textContent = "Erreur de configuration. ID de chaîne manquant.";
+        statusMessage.classList.remove('alert-info', 'alert-warning');
+        statusMessage.classList.add('alert-danger'); // Rouge
+        statusMessage.style.display = 'block';
+        return;
+    }
+
+    const liveEmbedUrl = `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1`;
+
+    // 2. Logique d'affichage basée sur l'état 'isLive'
+    if (isLive) {
+        // Le cas EN DIRECT : Afficher la vidéo
+        displayLivePlayer(liveContainer, statusMessage, liveEmbedUrl);
+
+    } else {
+        // Le cas HORS LIGNE : Afficher le message par défaut
+
+        liveContainer.innerHTML = '';
+        liveContainer.style.display = 'none';
+
+        statusMessage.style.display = 'block';
+        statusMessage.textContent = "Aucune diffusion en direct n'est actuellement en cours.";
+        statusMessage.classList.remove('alert-info', 'alert-success', 'alert-danger');
+        statusMessage.classList.add('alert-warning'); // Jaune/Orange pour le hors ligne
+    }
+};
+
 // ==================== Attente du chargement complet du DOM ====================
 document.addEventListener("DOMContentLoaded", () => {
-    
+
     // ==================== 0. Effet texte automatique (machine à écrire) ====================
     const text = "BIENVENUE DANS LA MAISON DU SEIGNEUR...";
     const target = document.getElementById("autoText");
@@ -100,7 +180,9 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(typeWriter, 1000);
     }
 
-    // ==================== 1. Défilement doux (Smooth Scroll) ====================
+    // ==================== 1. Défilement doux (Smooth Scroll) et Fermeture Offcanvas ====================
+    // (Cette logique doit être dans une fonction externe si vous avez suivi les étapes précédentes, mais ici, 
+    // on laisse l'écouteur d'événement en place pour les ancres génériques)
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         anchor.addEventListener("click", (e) => {
             const href = anchor.getAttribute("href");
@@ -223,26 +305,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Événement pour le champ de recherche
     const searchInput = document.getElementById("video-search-input");
-    // Crée une version debounced de la fonction de recherche
     const debouncedSearch = debounce(() => {
-        currentPage = 1; // Réinitialise la pagination pour une nouvelle recherche
+        currentPage = 1;
         fetchVideos();
-    }, 300); // Délai de 300ms
+    }, 300);
 
     if (searchInput) {
         searchInput.addEventListener('input', (event) => {
-            currentSearchQuery = event.target.value.trim(); // Met à jour la variable globale
-            debouncedSearch(); // Appelle la fonction debounced
+            currentSearchQuery = event.target.value.trim();
+            debouncedSearch();
         });
     }
-    
+
     // Événement pour le bouton de recherche (si présent)
-    const searchButton = document.getElementById("search-button"); // Assurez-vous d'avoir un id="search-button" dans votre HTML
+    const searchButton = document.getElementById("search-button");
     if (searchButton) {
         searchButton.addEventListener("click", () => {
-            currentSearchQuery = searchInput.value.trim(); // Met à jour la variable globale avec la valeur actuelle
-            currentPage = 1; // Réinitialise la pagination
-            fetchVideos(); // Lance la recherche immédiatement sans debounce pour le bouton
+            currentSearchQuery = searchInput.value.trim();
+            currentPage = 1;
+            fetchVideos();
         });
     }
 
@@ -251,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (sortSelect) {
         sortSelect.addEventListener("change", () => {
             currentSortOrder = sortSelect.value;
-            currentPage = 1; // Réinitialise la pagination pour un nouveau tri
+            currentPage = 1;
             fetchVideos();
         });
     }
@@ -282,5 +363,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const videoGridExists = document.getElementById("videos-grid");
     if (videoGridExists) {
         fetchVideos();
+    }
+
+    // ==================== 5. Initialisation du lecteur YouTube en direct ====================
+    const liveContainerExists = document.getElementById('live-player-container');
+
+    if (liveContainerExists) {
+        // N'appelle la fonction que si au moins le conteneur principal est présent.
+        checkLiveStatus();
     }
 });

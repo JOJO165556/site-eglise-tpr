@@ -1,23 +1,36 @@
-// /js/bibliotheque.js
+// FONCTION GLOBALE : RÉCUPÉRATION DES BROCHURES AVEC GESTION D'ERREUR DÉTAILLÉE
 
-// Fonction pour récupérer les brochures (cette partie ne change pas)
+/**
+ * Récupère les brochures depuis l'API. Retourne un tableau de brochures en cas de succès,
+ * ou un objet { error: string, message: string } en cas d'échec (API ou réseau).
+ */
 async function fetchBrochures() {
     const url = '/api/brochures';
     try {
         const response = await fetch(url);
+        
+        // Si la réponse n'est PAS OK (404, 500, etc.), nous lisons le JSON pour le message
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Erreur de chargement des brochures');
+            const errorData = await response.json();
+            // Retourne l'objet d'erreur pour un affichage détaillé dans le DOM
+            return { error: errorData.error, message: errorData.message };
         }
+        
+        // Si la réponse est OK (200), nous retournons le tableau des brochures
         return response.json();
     } catch (error) {
-        console.error("Erreur de l'API :", error);
-        throw error;
+        // Gère les erreurs réseau (pas de connexion, URL incorrecte)
+        console.error("Erreur de l'API ou réseau :", error);
+        return { error: 'Erreur Réseau', message: 'Impossible de contacter le serveur. Veuillez vérifier votre connexion.' };
     }
 }
 
+// LOGIQUE PRINCIPALE DÈS QUE LE DOM EST CHARGÉ
+
 document.addEventListener("DOMContentLoaded", () => {
-    // --- Logique pour la LECTURE DE LA BIBLE (partie front-end) ---
+    
+    // PARTIE LECTURE DE LA BIBLE 
+    
     // SÉLECTEURS POUR LES ÉLÉMENTS HTML
     const bookDropdownButton = document.getElementById("bookDropdown");
     const chapterDropdownButton = document.getElementById("chapterDropdown");
@@ -148,37 +161,34 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
             const targetVerse = document.getElementById(`verse-${selectedVerseNumber}`);
             if (targetVerse) {
+                // Supprime la mise en évidence des anciens versets
                 document.querySelectorAll('#verseText p.highlight').forEach(el => el.classList.remove('highlight'));
                 
+                // Ajoute la mise en évidence au nouveau verset
                 targetVerse.classList.add('highlight');
                 
+                // Défilement doux vers le verset
                 targetVerse.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        }, 50); // Petit d\u00e9lai pour laisser le temps au navigateur de charger les \u00e9l\u00e9ments
+        }, 50); 
     });
 
-
-    // --- Logique pour l'AFFICHAGE des BROCHURES (cette partie ne change pas) ---
+    // PARTIE AFFICHAGE DES BROCHURES 
+    
     const brochuresList = document.getElementById("brochuresList");
     const brochureErrorMessageDiv = document.getElementById("brochureErrorMessage");
     const brochuresTab = document.getElementById("brochures-tab");
 
-    brochuresTab.addEventListener('shown.bs.tab', async () => {
-        try {
-            const brochures = await fetchBrochures();
-            renderBrochures(brochures);
-        } catch (error) {
-            brochureErrorMessageDiv.textContent = "Impossible de charger les brochures.";
-            console.error(error);
-        }
-    });
-
+    /**
+     * Fonction pour générer les cartes de brochure dans le DOM.
+     */
     function renderBrochures(brochures) {
         brochuresList.innerHTML = "";
-        if (brochures.length === 0) {
-            brochuresList.innerHTML = '<p class="text-center">Aucune brochure disponible pour le moment.</p>';
+        if (!brochures || brochures.length === 0) {
+            brochuresList.innerHTML = '<p class="text-center text-muted">Aucune brochure disponible pour le moment.</p>';
             return;
         }
+        
         brochures.forEach(brochure => {
             const card = document.createElement("div");
             card.className = "col-md-4 mb-4";
@@ -197,6 +207,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Lancement initial
+    /**
+     * Écoute l'événement 'shown.bs.tab' (typiquement Bootstrap) pour charger les données.
+     */
+    if (brochuresTab) {
+        brochuresTab.addEventListener('shown.bs.tab', async () => {
+            // Nettoyer et afficher le chargement
+            brochuresList.innerHTML = `<p class="text-center text-muted">Chargement des brochures...</p>`;
+            brochureErrorMessageDiv.textContent = "";
+
+            const result = await fetchBrochures();
+
+            if (result.error) {
+                // Afficher le message d'erreur détaillé renvoyé par fetchBrochures
+                brochuresList.innerHTML = ""; // Vider le message de chargement
+                brochureErrorMessageDiv.innerHTML = `<div class="alert alert-warning" role="alert">
+                    <strong>${result.error} :</strong> ${result.message}
+                </div>`;
+            } else {
+                // Afficher les brochures (le résultat est un tableau)
+                renderBrochures(result);
+            }
+        });
+    }
+
+    // LANCEMENT INITIAL
     loadBibleData();
 });

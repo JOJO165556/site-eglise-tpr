@@ -28,36 +28,53 @@
         <a class="navbar-brand logo" href="#">
           <img src="/images_Church/logo.jpg" alt="Logo" class="logo-img me-2" />
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+          aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-          <ul class="navbar-nav align-items-center">
-            <li class="nav-item">
-              <a class="nav-link" id="accueil" href="/#home"><i class="fas fa-home me-1"></i> Accueil</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#sections"><i class="fas fa-users-line me-1"></i> Services</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#calendrier"><i class="fas fa-calendar-alt me-1"></i> Calendrier</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#galerie"><i class="fas fa-images me-1"></i> Galerie</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#quiz-and-quotes"><i class="fas fa-question-circle me-1"></i> Quiz</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#contact"><i class="fas fa-envelope me-1"></i> Contact</a>
-            </li>
-            <li class="nav-item nav-item-cta ms-lg-3">
-              <a class="nav-link btn btn-custom-primary" href="/jeunesse_don">
-                <i class="fa-solid fa-gift me-1"></i> Soutenir la jeunesse
-              </a>
-            </li>
-          </ul>
+
+        <div class="offcanvas offcanvas-end offcanvas-lg" tabindex="-1" id="offcanvasNavbar"
+          aria-labelledby="offcanvasNavbarLabel">
+
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Navigation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+
+          <div class="offcanvas-body">
+            <ul class="navbar-nav justify-content-end align-items-center flex-grow-1 pe-3">
+              <li class="nav-item">
+                <a class="nav-link" id="accueil" href="/#home" data-bs-dismiss="offcanvas"><i
+                    class="fas fa-home me-1"></i> Accueil</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#sections" data-bs-dismiss="offcanvas"><i class="fas fa-users-line me-1"></i>
+                  Services</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#calendrier" data-bs-dismiss="offcanvas"><i
+                    class="fas fa-calendar-alt me-1"></i> Calendrier</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#galerie" data-bs-dismiss="offcanvas"><i class="fas fa-images me-1"></i>
+                  Galerie</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#quiz-and-quotes" data-bs-dismiss="offcanvas"><i
+                    class="fas fa-question-circle me-1"></i> Quiz</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#contact" data-bs-dismiss="offcanvas"><i class="fas fa-envelope me-1"></i>
+                  Contact</a>
+              </li>
+              <li class="nav-item nav-item-cta ms-lg-3">
+                <a class="nav-link btn btn-custom-primary" href="/jeunesse_don" data-bs-dismiss="offcanvas">
+                  <i class="fa-solid fa-gift me-1"></i> Soutenir la jeunesse
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </nav>
     </div>

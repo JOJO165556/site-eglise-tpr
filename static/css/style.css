@@ -1,17 +1,27 @@
 /* ==================== Variables ==================== */
 :root {
-    --primary-color: #0c4786; /* Bleu foncé */
-    --secondary-color: #ffc107; /* Jaune d'accentuation */
-    --bg-light-color: #f8f9fa; /* Gris clair */
+    --primary-color: #0c4786;
+    /* Bleu foncé */
+    --secondary-color: #ffc107;
+    /* Jaune d'accentuation */
+    --bg-light-color: #f8f9fa;
+    /* Gris clair */
     --bg-white-color: #ffffff;
-    --text-dark-color: #212529; /* Noir */
-    --text-light-color: #ffffff; /* Blanc */
-    --footer-bg-color: #1a1a1a; /* Noir pour le footer */
+    --text-dark-color: #212529;
+    /* Noir */
+    --text-light-color: #ffffff;
+    /* Blanc */
+    --footer-bg-color: #1a1a1a;
+    /* Noir pour le footer */
     --font-primary: "Merriweather", serif;
     --font-secondary: 'Montserrat', sans-serif;
 }
 
 /* ==================== Style général ==================== */
+body {
+    padding: 0 15px;
+}
+
 .body-custom {
     font-family: var(--font-secondary);
     background-color: var(--bg-light-color);
@@ -19,7 +29,11 @@
     line-height: 1.6;
 }
 
-h1, h2, h3, .display-4, .display-5 {
+h1,
+h2,
+h3,
+.display-4,
+.display-5 {
     font-family: var(--font-primary);
     color: var(--primary-color);
     font-weight: 700;
@@ -40,22 +54,36 @@ h1, h2, h3, .display-4, .display-5 {
 }
 
 .logo-img {
-    height: 150px; 
+    height: 150px;
     width: auto;
 }
 
 .navbar-nav .nav-link {
-    font-size: 1.5rem; 
+    font-size: 1.5rem;
     font-weight: 500;
     color: var(--text-dark-color);
     transition: all 0.3s ease;
 }
 
-.navbar-nav .nav-link:hover {
+/* Appliquer le style au survol, au clic et au focus initial (mobile) */
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus,
+/* <--- NOUVEAU : État de focus */
+.navbar-nav .nav-link:active {
+    /* <--- NOUVEAU : Moment du clic */
     background-color: var(--primary-color);
     color: var(--text-light-color);
     border-radius: 5px;
     padding: 0.5rem 1rem;
+}
+
+.navbar-nav .nav-link:focus:not(:hover) {
+    background-color: transparent;
+    /* Revenir au fond transparent */
+    color: var(--text-dark-color);
+    /* Revenir à la couleur du texte normal */
+    padding: initial;
+    /* Assurez-vous que le padding revient à la valeur par défaut */
 }
 
 .nav-link.btn-custom-primary {
@@ -84,7 +112,8 @@ h1, h2, h3, .display-4, .display-5 {
 
 /* ==================== Sections et Hero ==================== */
 .section-padding {
-    padding: 5rem 0;
+    padding-top: 50px;
+    padding-bottom: 50px;
 }
 
 .section-vision {
@@ -112,13 +141,13 @@ h1, h2, h3, .display-4, .display-5 {
 }
 
 .hero-text-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  min-height: 100vh; 
-  padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+    padding: 20px;
 }
 
 .hero-title {
@@ -173,7 +202,8 @@ h1, h2, h3, .display-4, .display-5 {
     border-left: 5px solid var(--secondary-color);
     margin: 2rem auto;
     padding: 1.5rem;
-    border-radius: 8px; /* On peut ajuster ce rayon si on veut un style différent pour les blockquotes */
+    border-radius: 8px;
+    /* On peut ajuster ce rayon si on veut un style différent pour les blockquotes */
 }
 
 .citation-card:hover {
@@ -224,10 +254,10 @@ h1, h2, h3, .display-4, .display-5 {
 }
 
 .card-link {
-    text-decoration: none; 
-    color: inherit; 
-    display: block; 
-    height: 100%; 
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
 }
 
 .event-card {
@@ -281,12 +311,12 @@ h1, h2, h3, .display-4, .display-5 {
 }
 
 .hover-enlarge {
-    transition: transform 0.3s ease-in-out; 
-    overflow: hidden; 
+    transition: transform 0.3s ease-in-out;
+    overflow: hidden;
 }
 
 .hover-enlarge:hover {
-    transform: scale(1.05); 
+    transform: scale(1.05);
 }
 
 /* ==================== Galerie et Carrousel ==================== */
@@ -331,76 +361,83 @@ h1, h2, h3, .display-4, .display-5 {
 /* Effet de survol pour les boutons de carrousel */
 .carousel-control-prev-icon:hover,
 .carousel-control-next-icon:hover {
-  background-color: var(--secondary-color) !important;
+    background-color: var(--secondary-color) !important;
 }
 
 /* Permet le défilement horizontal pour les petits écrans */
 @media (max-width: 768px) {
-  .scrollable-row {
-    display: flex; /* Aligne les éléments sur une seule ligne */
-    flex-wrap: nowrap; /* Empêche les éléments de passer à la ligne */
-    overflow-x: auto; /* Active le défilement horizontal */
-    
-    /* Cache la barre de défilement (optionnel) */
-    -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: none; /* IE et Edge */
-    scrollbar-width: none; /* Firefox */
-  }
+    .scrollable-row {
+        display: flex;
+        /* Aligne les éléments sur une seule ligne */
+        flex-wrap: nowrap;
+        /* Empêche les éléments de passer à la ligne */
+        overflow-x: auto;
+        /* Active le défilement horizontal */
 
-  .scrollable-row::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
+        /* Cache la barre de défilement (optionnel) */
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: none;
+        /* IE et Edge */
+        scrollbar-width: none;
+        /* Firefox */
+    }
+
+    .scrollable-row::-webkit-scrollbar {
+        display: none;
+        /* Chrome, Safari, Opera */
+    }
 }
 
 @media (max-width: 991.98px) {
-  .horizontal-scroll-row {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    gap: 1.5rem;
-  }
-  
-  .horizontal-scroll-row::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .col-scroll-item {
-    min-width: 80%; /* Pour afficher une carte à la fois */
-    flex-shrink: 0;
-    scroll-snap-align: center;
-  }
+    .horizontal-scroll-row {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        gap: 1.5rem;
+    }
+
+    .horizontal-scroll-row::-webkit-scrollbar {
+        display: none;
+    }
+
+    .col-scroll-item {
+        min-width: 80%;
+        /* Pour afficher une carte à la fois */
+        flex-shrink: 0;
+        scroll-snap-align: center;
+    }
 }
 
 /* ==================== Formulaire de contact ==================== */
 .contact-form .form-control {
-  /* Contour permanent de 2px, de la couleur primaire */
-  border: 2px solid var(--primary-color);
-  border-radius: 30px;
-  padding: 1rem 1.5rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    /* Contour permanent de 2px, de la couleur primaire */
+    border: 2px solid var(--primary-color);
+    border-radius: 30px;
+    padding: 1rem 1.5rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .contact-form .form-control:focus {
-  /* L'effet d'ombre apparaît au focus */
-  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-  /* Le contour reste de la couleur primaire au focus */
-  border-color: var(--primary-color);
+    /* L'effet d'ombre apparaît au focus */
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+    /* Le contour reste de la couleur primaire au focus */
+    border-color: var(--primary-color);
 }
 
 .btn-form-submit {
-  background-color: var(--primary-color);
-  color: var(--text-light-color);
-  font-size: 1.25rem;
-  border-radius: 50px;
-  padding: 1rem 3rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border: none;
-  transition: background-color 0.3s ease;
+    background-color: var(--primary-color);
+    color: var(--text-light-color);
+    font-size: 1.25rem;
+    border-radius: 50px;
+    padding: 1rem 3rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    transition: background-color 0.3s ease;
 }
 
 .btn-form-submit:hover {
-  background-color: #0056b3;
+    background-color: #0056b3;
 }
 
 /* ==================== Boutons généraux ==================== */
@@ -518,16 +555,26 @@ h1, h2, h3, .display-4, .display-5 {
     transform: translateY(0);
 }
 
-/* ==================== Media Queries ==================== */
+/* ==================== Media Queries (Mode Mobile) ==================== */
 @media (max-width: 991.98px) {
     .main-header .navbar-nav {
+        /* Garde le texte centré pour la liste d'éléments */
         text-align: center;
         margin-top: 1rem;
     }
 
     .nav-item-cta {
+        /* Retire la marge gauche horizontale définie par défaut pour desktop */
         margin-left: 0 !important;
+        /* Définit une marge verticale entre les éléments empilés */
         margin-top: 1rem;
+        margin-bottom: 1rem;
+        /* Ajout d'une marge en bas pour plus d'espace */
+    }
+
+    /* Supprime la marge de 20px entre les deux boutons en mode mobile, car ils sont verticaux */
+    .nav-item-cta+.nav-item-cta {
+        margin-left: 0;
     }
 
     .hero-section {
@@ -535,14 +582,18 @@ h1, h2, h3, .display-4, .display-5 {
     }
 }
 
-/* Ajoute un espace à gauche au deuxième bouton nav-item-cta */
-.nav-item-cta + .nav-item-cta {
-    margin-left: 20px;
+@media (max-width: 575.98px) {
+    body {
+        /* Augmentez légèrement le padding horizontal pour que le texte ne touche jamais les bords */
+        padding-left: 15px;
+        padding-right: 15px;
+    }
 }
 
 /* ==================== Styles supplémentaires ==================== */
 .highlight {
-    background-color: #fce4ec; /* Rose clair */
+    background-color: #fce4ec;
+    /* Rose clair */
     border-radius: 5px;
     padding: 2px;
     transition: background-color 0.5s ease;

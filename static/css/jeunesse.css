@@ -67,9 +67,10 @@ h1, h2, h3, h4, h5, h6 {
     background-color: #fff;
     padding: 15px 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: sticky;
+    position: fixed;
+    width: 100%;
     top: 0;
-    z-index: 1000;
+    z-index: 1030;
 }
 
 .main-header .navbar-nav .nav-link {
@@ -285,7 +286,7 @@ h1, h2, h3, h4, h5, h6 {
 #quiz-and-quotes,
 #galerie,
 #contact {
-    scroll-margin-top: 150px;
+    scroll-margin-top: 150px; 
 }
 
 /* Modal */
