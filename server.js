@@ -1,3 +1,5 @@
+// Charge les variables d'environnement du fichier .env
+require('dotenv').config();
 // --- MODULES ET INITIALISATION ---
 const express = require("express");
 const path = require("path");
@@ -7,9 +9,7 @@ const { createClient } = require("@supabase/supabase-js");
 const fetch = require('node-fetch');
 const cron = require('node-cron');
 const { google } = require('googleapis');
-
-// Charge les variables d'environnement du fichier .env
-require('dotenv').config();
+const { Pool } = require('pg');
 
 // Initialisation du serveur Express
 const app = express();
@@ -19,6 +19,32 @@ const PORT = process.env.PORT || 5000;
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// --- CONFIGURATION DU POOL POSTGRESQL (SUPABASE) ---
+
+// L'URI complète doit être définie dans votre .env : 
+// SUPABASE_DB_URI_PG=postgres://postgres:[NOUVEAU_MDP_SIMPLE]@db.ycebkpmrthfvhxxcgmjd.supabase.co:5432/postgres
+const SUPABASE_DB_URI_PG = process.env.SUPABASE_DB_URI_PG; 
+
+if (!SUPABASE_DB_URI_PG) {
+    console.error("FATAL ERROR: SUPABASE_DB_URI_PG n'est pas définie. Vérifiez le .env.");
+    // Vous pouvez choisir de ne pas faire planter le serveur ici si d'autres routes fonctionnent.
+}
+
+const pool = new Pool({
+    connectionString: SUPABASE_DB_URI_PG, 
+    ssl: { rejectUnauthorized: false }, // Nécessaire pour Supabase (certificat auto-signé)
+    family: 6 // Pour résoudre les problèmes d'hôte local (IPv4 vs IPv6)
+});
+
+// Gestion des erreurs du pool (très important pour le diagnostic)
+pool.on('error', (err) => {
+    console.error('❌ Erreur critique sur le pool de connexion PostgreSQL:', err);
+    // En cas d'erreur de connexion non rattrapable, le serveur peut s'arrêter.
+    // process.exit(-1); 
+});
+
+console.log('Pool de connexion PostgreSQL (pg) configuré.');
 
 // Variables d'authentification
 const ADMIN_USER = process.env.ADMIN_USER;
@@ -230,11 +256,20 @@ app.get('/api/videos', async (req, res) => {
     }
 });
 
-// Route pour obtenir les événements du calendrier
-app.get("/api/events", async (req, res) => {
-    const { data, error } = await supabase.from('events').select('*').order('date', { ascending: true });
-    if (error) return res.status(500).json({ error: error.message });
-    res.json(data);
+// Route pour obtenir les événements de la JEUNESSE
+app.get("/api/jeunesse-events", async (req, res) => {
+    
+    // N'oubliez pas les renommages pour que le client reçoive des noms en français
+    const { data, error } = await supabase
+        .from('jeunesse_events') 
+        .select('title, description, date, link') 
+        .order('date', { ascending: true }); // Tri par date
+
+    if (error) {
+        console.error('❌ Erreur Supabase lors de la récupération des événements jeunesse:', error);
+        return res.status(500).json({ error: error.message });
+    }
+    res.json(data);
 });
 
 // Route pour obtenir les questions du quiz
@@ -242,6 +277,52 @@ app.get("/api/quiz-questions", async (req, res) => {
     const { data, error } = await supabase.from('quiz_questions').select('*');
     if (error) return res.status(500).json({ error: error.message });
     res.json(data);
+});
+
+// --- ROUTE API DE LA PENSÉE DU JOUR ---
+app.get('/api/daily-quote', async (req, res) => {
+    // Déclarez 'client' ici pour qu'il soit accessible dans le bloc 'finally'
+    let client; 
+    let quote; // Déclarez 'quote' ici pour l'utiliser dans le UPDATE
+
+    try {
+        // 1. Obtient le client de connexion du pool
+        client = await pool.connect(); 
+
+        // 2. Sélectionne la citation la moins récemment utilisée
+        const result = await client.query(
+            "SELECT quote_text, reference FROM daily_quotes ORDER BY coalesce(last_used, '1900-01-01') ASC LIMIT 1"
+        );
+
+        if (result.rows.length === 0) {
+            // Pas de citation trouvée
+            return res.status(404).json({ error: "No quotes found in the database." });
+        }
+
+        quote = result.rows[0];
+
+        // 3. Met à jour la date de dernière utilisation
+        await client.query(
+            'UPDATE daily_quotes SET last_used = CURRENT_DATE WHERE quote_text = $1',
+            [quote.quote_text]
+        );
+
+        // 4. Renvoie la citation
+        res.json(quote);
+
+    } catch (error) {
+        // Log l'erreur complète pour le diagnostic
+        console.error('DB Error fetching daily quote:', error);
+        
+        // Renvoie l'erreur 500 au frontend
+        res.status(500).json({ error: "Failed to fetch daily quote from database." });
+
+    } finally {
+        // 5. LIBÈRE TOUJOURS LE CLIENT, QU'IL Y AIT SUCCÈS OU ÉCHEC
+        if (client) {
+            client.release(); 
+        }
+    }
 });
 
 // --- ROUTES ADMIN PROTÉGÉES ---
