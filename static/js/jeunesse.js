@@ -323,8 +323,8 @@ const endQuiz = () => {
             <h3>Résultats du Quiz</h3>
             <p class="h4 text-center mt-4">${finalMessage}</p>
             <p class="text-center mt-3">Merci d'avoir participé !</p>
-            <button class="btn btn-primary mt-3" onclick="window.location.reload()">Recommencer le Quiz</button>
-        `;
+            <button class="btn btn-primary mt-3" onclick="fetchQuizQuestions()">Recommencer le Quiz</button> 
+            `;
     }
 };
 
@@ -346,48 +346,72 @@ if (sliderImages.length > 0) {
 }
 
 
-// --- GESTION DE LA PENSÉE DU JOUR (MISE À JOUR PAR API) ---
+// --- GESTION DE LA PENSÉE DU JOUR ---
 
 /**
  * Récupère la pensée du jour depuis l'API et l'affiche, ainsi que sa référence.
  */
 const displayDailyQuote = async () => {
     const quoteElement = document.getElementById('daily-quote');
-    // NOTE: Votre HTML ne contient pas d'ID 'daily-quote-reference', donc je l'ai commenté.
-    // const quoteReferenceElement = document.getElementById('daily-quote-reference'); 
     const quoteIconLeft = document.querySelector('.fa-quote-left');
     const quoteIconRight = document.querySelector('.fa-quote-right');
 
+    // Réinitialise les éléments
     if (quoteElement) quoteElement.textContent = '';
     if (quoteIconLeft) quoteIconLeft.style.visibility = 'hidden';
     if (quoteIconRight) quoteIconRight.style.visibility = 'hidden';
 
     try {
         const response = await fetch('/api/daily-quote');
+        
         if (!response.ok) {
+            // Gère les statuts HTTP non 200 (comme 404, 500)
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
+        
         const data = await response.json();
 
-        const quoteText = data.quote_text;
+        // 🛑 Utilise 'data.quote' (synchronisé avec le serveur)
+        const quoteText = data.quote;
         const quoteReference = data.reference;
 
         if (quoteElement && quoteText) {
+            // Concatène la citation et la référence
             quoteElement.textContent = quoteText + (quoteReference ? ` — ${quoteReference}` : '');
+            
+            // Affiche les icônes de guillemets
             if (quoteIconLeft) quoteIconLeft.style.visibility = 'visible';
             if (quoteIconRight) quoteIconRight.style.visibility = 'visible';
         }
     } catch (error) {
         console.error('Erreur lors du chargement de la pensée du jour:', error);
 
-        // Texte de Secours en cas d'échec API
+        // --- Texte de Secours en cas d'échec API (404, 500 ou erreur réseau) ---
         if (quoteElement) {
             quoteElement.textContent = "Une pensée de secours : L'Éternel est bon ; il est un refuge au jour de la détresse ; il connaît ceux qui se confient en lui. — Nahum 1:7";
         }
+        // Affiche les icônes même pour le texte de secours
         if (quoteIconLeft) quoteIconLeft.style.visibility = 'visible';
         if (quoteIconRight) quoteIconRight.style.visibility = 'visible';
     }
 };
+
+// ... (Reste de votre code JS) ...
+
+// --- INITIALISATION DE LA PAGE ---
+document.addEventListener('DOMContentLoaded', () => {
+    // ... (Autres initialisations) ...
+    
+    // 4. Chargement des données via API
+    fetchJeunesseEvents();
+    fetchQuizQuestions();
+    
+    // 🛑 DÉCLENCHEMENT DE LA PENSÉE DU JOUR
+    displayDailyQuote(); 
+
+    // 5. Vérification du contenu des affiches
+    checkAffichesContent();
+});
 
 /**
  * Vérifie si la section des affiches contient des images.

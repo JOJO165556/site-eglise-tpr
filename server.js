@@ -278,46 +278,49 @@ app.get("/api/quiz-questions", async (req, res) => {
     res.json(data);
 });
 
-// --- ROUTE API DE LA PENSÉE DU JOUR ---
+// --- ROUTE API DE LA PENSÉE DU JOUR (VERSION FINALE ET STABLE) ---
 app.get('/api/daily-quote', async (req, res) => {
-    // Déclarez 'client' ici pour qu'il soit accessible dans le bloc 'finally'
     let client;
-    let quote; // Déclarez 'quote' ici pour l'utiliser dans le UPDATE
+    let quote;
 
     try {
         // 1. Obtient le client de connexion du pool
         client = await pool.connect();
 
         // 2. Sélectionne la citation la moins récemment utilisée
+        // Utilisation des colonnes vérifiées : id, quote_text, et reference
         const result = await client.query(
-            "SELECT quote_text, reference FROM daily_quotes ORDER BY coalesce(last_used, '1900-01-01') ASC LIMIT 1"
+            "SELECT id, quote_text, reference FROM daily_quotes ORDER BY coalesce(last_used, '1900-01-01') ASC LIMIT 1"
         );
 
         if (result.rows.length === 0) {
-            // Pas de citation trouvée
             return res.status(404).json({ error: "No quotes found in the database." });
         }
 
+        // L'objet 'quote' contient désormais { id, quote_text, reference }
         quote = result.rows[0];
 
-        // 3. Met à jour la date de dernière utilisation
+        // 3. Met à jour la date de dernière utilisation en utilisant l'ID
         await client.query(
-            'UPDATE daily_quotes SET last_used = CURRENT_DATE WHERE quote_text = $1',
-            [quote.quote_text]
+            'UPDATE daily_quotes SET last_used = CURRENT_DATE WHERE id = $1',
+            [quote.id]
         );
 
-        // 4. Renvoie la citation
-        res.json(quote);
+        // 4. Renvoie la citation. On mappe 'quote_text' de la DB à 'quote' pour le client JS.
+        res.json({
+            quote: quote.quote_text,
+            reference: quote.reference
+        });
 
     } catch (error) {
-        // Log l'erreur complète pour le diagnostic
-        console.error('DB Error fetching daily quote:', error);
-
+        // Log l'erreur exacte dans le terminal pour les diagnostics
+        console.error('❌ DB Error fetching daily quote (FINAL):', error);
+        
         // Renvoie l'erreur 500 au frontend
-        res.status(500).json({ error: "Failed to fetch daily quote from database." });
+        res.status(500).json({ error: "Failed to fetch daily quote from database. Check server logs." });
 
     } finally {
-        // 5. LIBÈRE TOUJOURS LE CLIENT, QU'IL Y AIT SUCCÈS OU ÉCHEC
+        // 5. LIBÈRE TOUJOURS LE CLIENT
         if (client) {
             client.release();
         }
