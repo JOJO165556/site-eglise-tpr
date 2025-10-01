@@ -22,26 +22,24 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- CONFIGURATION DU POOL POSTGRESQL (SUPABASE) ---
 
-// L'URI complète doit être définie dans votre .env : 
-const SUPABASE_DB_URI_PG = process.env.SUPABASE_DB_URI_PG;
-
-if (!SUPABASE_DB_URI_PG) {
-    console.error("FATAL ERROR: SUPABASE_DB_URI_PG n'est pas définie. Vérifiez le .env.");
-    // Vous pouvez choisir de ne pas faire planter le serveur ici si d'autres routes fonctionnent.
-}
-
-// Détermine si on est dans un environnement Vercel/Production
 const isVercel = process.env.VERCEL === '1'; 
 
-// Configuration de base pour le pool
+// Configuration du pool utilisant les variables séparées
 const poolConfig = {
-    connectionString: SUPABASE_DB_URI_PG,
+    // 🛑 Utilisation des variables séparées
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432, // Assurez-vous que le port est un nombre
+    
     family: 6,
-    // La configuration SSL est essentielle pour Vercel, et peut être nécessaire en local.
-    // On l'ajoute si on est sur Vercel OU si l'URI contient la mention 'ssl'.
-    ssl: isVercel || SUPABASE_DB_URI_PG.includes('sslmode=require') ? {
-        rejectUnauthorized: false // Permet à Node.js de se connecter même sans vérification complète du certificat.
-    } : false // 'false' signifie pas de SSL (pour le développement local pur si l'URI ne le demande pas).
+    // La bascule SSL/TLS (essentielle pour Vercel)
+    ssl: isVercel ? { 
+        rejectUnauthorized: false
+    } : false
+    
+    // NOTE : On retire l'ancienne vérification .includes('sslmode=require') car Vercel gère le SSL si cette config est présente.
 };
 
 const pool = new Pool(poolConfig);
