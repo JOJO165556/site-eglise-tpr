@@ -30,11 +30,21 @@ if (!SUPABASE_DB_URI_PG) {
     // Vous pouvez choisir de ne pas faire planter le serveur ici si d'autres routes fonctionnent.
 }
 
-const pool = new Pool({
+// Détermine si on est dans un environnement Vercel/Production
+const isVercel = process.env.VERCEL === '1'; 
+
+// Configuration de base pour le pool
+const poolConfig = {
     connectionString: SUPABASE_DB_URI_PG,
-    ssl: { rejectUnauthorized: false }, // Nécessaire pour Supabase (certificat auto-signé)
-    family: 6 // Pour résoudre les problèmes d'hôte local (IPv4 vs IPv6)
-});
+    family: 6,
+    // La configuration SSL est essentielle pour Vercel, et peut être nécessaire en local.
+    // On l'ajoute si on est sur Vercel OU si l'URI contient la mention 'ssl'.
+    ssl: isVercel || SUPABASE_DB_URI_PG.includes('sslmode=require') ? {
+        rejectUnauthorized: false // Permet à Node.js de se connecter même sans vérification complète du certificat.
+    } : false // 'false' signifie pas de SSL (pour le développement local pur si l'URI ne le demande pas).
+};
+
+const pool = new Pool(poolConfig);
 
 // Gestion des erreurs du pool (très important pour le diagnostic)
 pool.on('error', (err) => {
