@@ -20,26 +20,34 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// --- CONFIGURATION DU POOL POSTGRESQL (SUPABASE) ---
+// --- LOGIQUE DE COMMUTATION ---
+const isVercel = process.env.VERCEL === '1';
 
-const isVercel = process.env.VERCEL === '1'; 
+const DB_HOST = process.env.DB_HOST;
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const DB_NAME = process.env.DB_NAME;
 
-// Configuration du pool utilisant les variables séparées
+// Si nous sommes sur Vercel, nous forçons l'utilisation du Pooler (Port 6543)
+// ET nous devons utiliser le nom d'utilisateur complet du Pooler.
+const VERCEL_DB_HOST = 'aws-0-eu-west-3.pooler.supabase.com'; // OU us-east-1 si vous êtes aux USA
+const VERCEL_DB_PORT = 6543;
+const VERCEL_DB_USER = `postgres.ycebkpmrthfvhxxcgmjd`; 
 const poolConfig = {
-    // 🛑 Utilisation des variables séparées
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
+    // 1. Bascule Utilisateur/Hôte/Port
+    // Si Vercel, utiliser les paramètres stables du Pooler.
+    user: isVercel ? VERCEL_DB_USER : process.env.DB_USER,
+    host: isVercel ? VERCEL_DB_HOST : process.env.DB_HOST,
+    port: isVercel ? VERCEL_DB_PORT : process.env.DB_PORT, 
+    
+    // 2. Paramètres standards (lus du .env)
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432, // Assurez-vous que le port est un nombre
-    
-    family: 6,
-    // La bascule SSL/TLS (essentielle pour Vercel)
+
+    // 3. SSL Obligatoire sur Vercel
     ssl: isVercel ? { 
         rejectUnauthorized: false
     } : false
-    
-    // NOTE : On retire l'ancienne vérification .includes('sslmode=require') car Vercel gère le SSL si cette config est présente.
 };
 
 const pool = new Pool(poolConfig);
