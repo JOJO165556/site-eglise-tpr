@@ -363,12 +363,12 @@ const displayDailyQuote = async () => {
 
     try {
         const response = await fetch('/api/daily-quote');
-        
+
         if (!response.ok) {
             // Gère les statuts HTTP non 200 (comme 404, 500)
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
-        
+
         const data = await response.json();
 
         // 🛑 Utilise 'data.quote' (synchronisé avec le serveur)
@@ -378,7 +378,7 @@ const displayDailyQuote = async () => {
         if (quoteElement && quoteText) {
             // Concatène la citation et la référence
             quoteElement.textContent = quoteText + (quoteReference ? ` — ${quoteReference}` : '');
-            
+
             // Affiche les icônes de guillemets
             if (quoteIconLeft) quoteIconLeft.style.visibility = 'visible';
             if (quoteIconRight) quoteIconRight.style.visibility = 'visible';
@@ -396,18 +396,15 @@ const displayDailyQuote = async () => {
     }
 };
 
-// ... (Reste de votre code JS) ...
-
 // --- INITIALISATION DE LA PAGE ---
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (Autres initialisations) ...
-    
+
     // 4. Chargement des données via API
     fetchJeunesseEvents();
     fetchQuizQuestions();
-    
+
     // 🛑 DÉCLENCHEMENT DE LA PENSÉE DU JOUR
-    displayDailyQuote(); 
+    displayDailyQuote();
 
     // 5. Vérification du contenu des affiches
     checkAffichesContent();
@@ -517,6 +514,30 @@ document.addEventListener('DOMContentLoaded', () => {
             hideEventModal();
         }
     };
+
+    // --- GESTION DU CARROUSEL 'Camp Des Jeunes' ---
+    const campJeunesCarousel = document.getElementById('campJeunesCarousel');
+    const campJeunesCountDisplay = document.getElementById('campJeunesCompteur');
+    const totalCampJeunesSlides = 2;
+
+    if (campJeunesCarousel && campJeunesCountDisplay) {
+        campJeunesCarousel.addEventListener('slid.bs.carousel', function (event) {
+            const currentSlideIndex = event.to + 1;
+            campJeunesCountDisplay.textContent = `Image ${currentSlideIndex} sur ${totalCampJeunesSlides}`;
+        });
+    }
+
+    // --- GESTION DU CARROUSEL 'Séminaire JC' ---
+    const seminaireJcCarousel = document.getElementById('seminaireJcCarousel');
+    const seminaireJcCountDisplay = document.getElementById('seminaireJcCompteur');
+    const totalSeminaireJcSlides = 16; // Assurez-vous que cela corresponde au nombre réel de slides (0 à 15)
+
+    if (seminaireJcCarousel && seminaireJcCountDisplay) {
+        seminaireJcCarousel.addEventListener('slid.bs.carousel', function (event) {
+            const currentSlideIndex = event.to + 1;
+            seminaireJcCountDisplay.textContent = `Image ${currentSlideIndex} sur ${totalSeminaireJcSlides}`;
+        });
+    }
 
     // 3. Gestion Offcanvas (Correction du défilement)
     setupOffcanvasScroll();

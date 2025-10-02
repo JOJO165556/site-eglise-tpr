@@ -156,3 +156,39 @@ main::before {
 .btn-form-submit:hover {
     opacity: 0.8;
 }
+
+/* 1. Assurez-vous que le bouton est fixé */
+#backToTopBtn {
+    /* ... autres styles ... */
+    position: fixed;
+    bottom: 20px;
+    right: 20px; /* Vérifiez cette valeur. Elle doit être petite sur mobile. */
+    z-index: 1050; /* Doit être au-dessus de tout le reste, y compris le offcanvas */
+    transition: opacity 0.3s, visibility 0.3s;
+    opacity: 0; /* Par défaut, il doit être caché par JS/CSS */
+    visibility: hidden;
+}
+
+/* 2. Style lorsque le bouton est visible (ajouté par JS) */
+#backToTopBtn.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 3. Ajustement pour mobile (utilisez des Media Queries) */
+@media (max-width: 767px) {
+    #backToTopBtn {
+        bottom: 15px;
+        right: 10px; /* Réduisez l'espace pour le garder dans la zone visible du mobile */
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* Empêche le défilement horizontal causé par des éléments qui débordent */
+body, html {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}

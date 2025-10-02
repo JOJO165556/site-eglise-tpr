@@ -10,6 +10,7 @@ const fetch = require('node-fetch');
 const cron = require('node-cron');
 const { google } = require('googleapis');
 const { Pool } = require('pg');
+const fs = require('fs');
 
 // Initialisation du serveur Express
 const app = express();
@@ -20,34 +21,26 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// --- LOGIQUE DE COMMUTATION ---
-const isVercel = process.env.VERCEL === '1';
+// Lisez le contenu du certificat CA si le fichier existe
+const caCertPath = path.join(__dirname, 'conf', 'prod-ca-2021.crt');
+const caCert = fs.existsSync(caCertPath) ? fs.readFileSync(caCertPath).toString() : null;
+// Déterminez si vous êtes en environnement Vercel ou en local
+const isVercel = process.env.VERCEL_ENV === 'production';
 
-const DB_HOST = process.env.DB_HOST;
-const DB_USER = process.env.DB_USER;
-const DB_PASSWORD = process.env.DB_PASSWORD;
-const DB_NAME = process.env.DB_NAME;
-
-// Si nous sommes sur Vercel, nous forçons l'utilisation du Pooler (Port 6543)
-// ET nous devons utiliser le nom d'utilisateur complet du Pooler.
-const VERCEL_DB_HOST = 'aws-0-eu-west-3.pooler.supabase.com'; // OU us-east-1 si vous êtes aux USA
-const VERCEL_DB_PORT = 6543;
-const VERCEL_DB_USER = `postgres.ycebkpmrthfvhxxcgmjd`; 
 const poolConfig = {
-    // 1. Bascule Utilisateur/Hôte/Port
-    // Si Vercel, utiliser les paramètres stables du Pooler.
-    user: isVercel ? VERCEL_DB_USER : process.env.DB_USER,
-    host: isVercel ? VERCEL_DB_HOST : process.env.DB_HOST,
-    port: isVercel ? VERCEL_DB_PORT : process.env.DB_PORT, 
-    
-    // 2. Paramètres standards (lus du .env)
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
+    // Utilise la bonne chaîne de connexion selon l'environnement
+    connectionString: isVercel ? process.env.DATABASE_URL_VERCEL : process.env.DATABASE_URL,
 
-    // 3. SSL Obligatoire sur Vercel
-    ssl: isVercel ? { 
+    // Configuration SSL : la logique de sécurité essentielle
+    ssl: isVercel ? {
+        // En Production (Vercel) : Sécurité maximale avec le certificat CA
+        ca: caCert,
+        rejectUnauthorized: true
+    } : {
+        // En Local (pour l'IPv6) : Désactivation de la vérification du nom d'hôte/IP
+        // C'est ce qui vous a permis de résoudre ERR_TLS_CERT_ALTNAME_INVALID.
         rejectUnauthorized: false
-    } : false
+    }
 };
 
 const pool = new Pool(poolConfig);
@@ -297,46 +290,93 @@ app.get("/api/quiz-questions", async (req, res) => {
 // --- ROUTE API DE LA PENSÉE DU JOUR (VERSION FINALE ET STABLE) ---
 app.get('/api/daily-quote', async (req, res) => {
     let client;
-    let quote;
-
     try {
-        // 1. Obtient le client de connexion du pool
         client = await pool.connect();
+        await client.query('BEGIN'); // Début de la transaction
 
-        // 2. Sélectionne la citation la moins récemment utilisée
-        // Utilisation des colonnes vérifiées : id, quote_text, et reference
-        const result = await client.query(
-            "SELECT id, quote_text, reference FROM daily_quotes ORDER BY coalesce(last_used, '1900-01-01') ASC LIMIT 1"
+        let quoteId;
+        let quoteData;
+
+        // 1. VÉRIFIE si une citation a déjà été sélectionnée aujourd'hui
+        const configResult = await client.query(
+            "SELECT value, last_updated FROM app_config WHERE key = 'current_daily_quote_id' FOR UPDATE"
         );
+        const configRow = configResult.rows[0];
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "No quotes found in the database." });
+        // Vérifie si la date enregistrée est AUJOURD'HUI
+        const isNewDay = !configRow || configRow.last_updated.toISOString().split('T')[0] !== new Date().toISOString().split('T')[0];
+
+        if (isNewDay) {
+            // --- C'EST UN NOUVEAU JOUR : SÉLECTIONNER ET METTRE À JOUR LA NOUVELLE CITATION ---
+
+            // 2. Trouve la citation la moins récemment utilisée
+            const nextQuoteResult = await client.query(
+                "SELECT id, quote_text, reference FROM daily_quotes ORDER BY coalesce(last_used, '1900-01-01') ASC LIMIT 1 FOR UPDATE"
+            );
+
+            if (nextQuoteResult.rows.length === 0) {
+                await client.query('COMMIT');
+                return res.status(404).json({ error: "No quotes found in the database." });
+            }
+
+            const newQuote = nextQuoteResult.rows[0];
+            quoteId = newQuote.id;
+            quoteData = newQuote;
+
+            // 3. Met à jour la date de dernière utilisation dans daily_quotes
+            await client.query(
+                'UPDATE daily_quotes SET last_used = CURRENT_DATE WHERE id = $1',
+                [quoteId]
+            );
+
+            // 4. Met à jour la table de configuration pour "verrouiller" la citation pour 24h
+            if (configRow) {
+                // Mise à jour si la ligne existe
+                await client.query(
+                    "UPDATE app_config SET value = $1, last_updated = CURRENT_DATE WHERE key = 'current_daily_quote_id'",
+                    [quoteId]
+                );
+            } else {
+                // Insertion si la ligne n'existe pas
+                await client.query(
+                    "INSERT INTO app_config (key, value, last_updated) VALUES ('current_daily_quote_id', $1, CURRENT_DATE)",
+                    [quoteId]
+                );
+            }
+
+        } else {
+            // --- LA CITATION DU JOUR EST DÉJÀ EN CACHE : RÉCUPÉRATION RAPIDE ---
+
+            quoteId = configRow.value;
+
+            // 5. Récupère les données de la citation verrouillée
+            const currentQuoteResult = await client.query(
+                "SELECT quote_text, reference FROM daily_quotes WHERE id = $1",
+                [quoteId]
+            );
+
+            if (currentQuoteResult.rows.length === 0) {
+                // Si l'ID est invalide, force une mise à jour au prochain appel.
+                await client.query('COMMIT');
+                return res.status(404).json({ error: "Quote ID in config not found." });
+            }
+            quoteData = currentQuoteResult.rows[0];
         }
 
-        // L'objet 'quote' contient désormais { id, quote_text, reference }
-        quote = result.rows[0];
+        await client.query('COMMIT'); // Fin de la transaction
 
-        // 3. Met à jour la date de dernière utilisation en utilisant l'ID
-        await client.query(
-            'UPDATE daily_quotes SET last_used = CURRENT_DATE WHERE id = $1',
-            [quote.id]
-        );
-
-        // 4. Renvoie la citation. On mappe 'quote_text' de la DB à 'quote' pour le client JS.
+        // 6. Renvoie la citation.
         res.json({
-            quote: quote.quote_text,
-            reference: quote.reference
+            quote: quoteData.quote_text,
+            reference: quoteData.reference
         });
 
     } catch (error) {
-        // Log l'erreur exacte dans le terminal pour les diagnostics
-        console.error('❌ DB Error fetching daily quote (FINAL):', error);
-        
-        // Renvoie l'erreur 500 au frontend
+        // En cas d'erreur, annule les changements
+        await client.query('ROLLBACK');
+        console.error('❌ DB Error fetching daily quote (24H LOGIC):', error);
         res.status(500).json({ error: "Failed to fetch daily quote from database. Check server logs." });
-
     } finally {
-        // 5. LIBÈRE TOUJOURS LE CLIENT
         if (client) {
             client.release();
         }
@@ -413,7 +453,7 @@ app.delete("/api/admin/members/:id", authenticateToken, async (req, res) => {
 // Route publique pour récupérer les brochures (pas de token requis)
 app.get("/api/brochures", async (req, res) => {
     // CAS D'ERREUR (à utiliser pour les tests uniquement) :
-    
+
     return res.status(404).json({
         error: "Aucun Contenu",
         message: "Les ressources en ligne ne sont temporairement pas disponibles."
