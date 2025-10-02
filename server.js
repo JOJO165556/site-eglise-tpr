@@ -373,7 +373,11 @@ app.get('/api/daily-quote', async (req, res) => {
 
     } catch (error) {
         // En cas d'erreur, annule les changements
-        await client.query('ROLLBACK');
+        // Ligne 375 (Hypothèse) : Vérification pour éviter l'erreur si client n'a jamais été défini
+        if (client) { // <--- AJOUTEZ CETTE VÉRIFICATION
+            // Ligne 376 (votre ligne de code) :
+            await client.query('ROLLBACK');
+        }
         console.error('❌ DB Error fetching daily quote (24H LOGIC):', error);
         res.status(500).json({ error: "Failed to fetch daily quote from database. Check server logs." });
     } finally {
