@@ -114,7 +114,7 @@ function displayLivePlayer(container, message, url) {
 /**
  * Fonction principale: Vérifie l'état du direct YouTube.
  */
-const checkLiveStatus = () => {
+const checkLiveStatus = async () => {
     const liveContainer = document.getElementById('live-player-container');
     const statusMessage = document.getElementById('live-status-message');
 
@@ -127,10 +127,6 @@ const checkLiveStatus = () => {
     // Simule la récupération de l'ID de chaîne
     const channelId = window.APP_SETTINGS ? window.APP_SETTINGS.YOUTUBE_CHANNEL_ID : 'FALLBACK_ID_SI_ERREUR';
 
-    // *** REMPLACEZ 'false' par votre logique d'API réelle pour obtenir le statut ***
-    const isLive = false;
-    // ******************************************************************************
-
     // 1. Vérification de l'ID de la chaîne (Erreur de configuration)
     if (!channelId || channelId === 'FALLBACK_ID_SI_ERREUR') {
         console.error("Erreur: L'ID de chaîne YouTube n'a pas été injecté par le serveur.");
@@ -141,23 +137,55 @@ const checkLiveStatus = () => {
         return;
     }
 
-    const liveEmbedUrl = `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1`;
+    // =========================================================================
+    // NOUVELLE LOGIQUE : APPEL API au serveur pour obtenir le statut
+    // =========================================================================
+    let isLive = false;
+    let videoId = null;
+
+    try {
+        const response = await fetch('/api/youtube-status');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // Récupère les données renvoyées par le serveur (isLive et videoId)
+        isLive = data.isLive;
+        videoId = data.videoId;
+
+    } catch (error) {
+        console.error("Erreur lors de la vérification du statut YouTube:", error);
+        // En cas d'échec de l'API, restons HORS LIGNE par sécurité
+        isLive = false;
+    }
+    // =========================================================================
 
     // 2. Logique d'affichage basée sur l'état 'isLive'
-    if (isLive) {
-        // Le cas EN DIRECT : Afficher la vidéo
-        displayLivePlayer(liveContainer, statusMessage, liveEmbedUrl);
+    if (isLive && videoId) {
+        // --- CAS EN DIRECT : Utilisation de l'ID Vidéo Spécifique (Plus fiable) ---
+        // Utiliser l'ID de la vidéo en direct est plus fiable que l'URL générique du canal
+        const specificEmbedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        displayLivePlayer(liveContainer, statusMessage, specificEmbedUrl);
 
     } else {
-        // Le cas HORS LIGNE : Afficher le message par défaut
-
+        // --- CAS HORS LIGNE ou ID VIDÉO MANQUANT ---
         liveContainer.innerHTML = '';
         liveContainer.style.display = 'none';
 
         statusMessage.style.display = 'block';
-        statusMessage.textContent = "Aucune diffusion en direct n'est actuellement en cours.";
-        statusMessage.classList.remove('alert-info', 'alert-success', 'alert-danger');
-        statusMessage.classList.add('alert-warning'); // Jaune/Orange pour le hors ligne
+
+        // Si isLive est true mais videoId est null, il pourrait y avoir un problème de flux
+        if (isLive && !videoId) {
+            statusMessage.textContent = "Le direct est détecté, mais le flux vidéo n'est pas encore actif. Veuillez patienter.";
+            statusMessage.classList.remove('alert-success', 'alert-danger');
+            statusMessage.classList.add('alert-info'); // Info
+        } else {
+            // Statut HORS LIGNE
+            statusMessage.textContent = "Aucune diffusion en direct n'est actuellement en cours.";
+            statusMessage.classList.remove('alert-info', 'alert-success', 'alert-danger');
+            statusMessage.classList.add('alert-warning'); // Jaune/Orange
+        }
     }
 };
 

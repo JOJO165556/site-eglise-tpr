@@ -1,5 +1,5 @@
 # Fichiers sensibles et dépendances
-/node_modules
+/node_modules/
 .env
 
 # Fichiers temporaires
@@ -7,4 +7,4 @@
 *.tmp
 
 # Configuration locale (contient le certificat CA)
-config/
+conf/

@@ -171,6 +171,54 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// Mise en cache pour éviter les dépassements de quota !
+let liveCache = { isLive: false, timestamp: 0 };
+const CACHE_DURATION_MS = 5 * 60 * 1000; // Mettre en cache pendant 5 minutes
+
+
+app.get('/api/youtube-status', async (req, res) => {
+    // Vérification du cache pour économiser le quota YouTube
+    const now = Date.now();
+    if (now - liveCache.timestamp < CACHE_DURATION_MS) {
+        return res.json(liveCache);
+    }
+
+    try {
+        const YOUTUBE_API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${YOUTUBE_CHANNEL_ID}&type=video&eventType=live&key=${YOUTUBE_API_KEY}`;
+
+        // 1. Appel à l'API YouTube
+        const response = await fetch(YOUTUBE_API_URL);
+        if (!response.ok) {
+            throw new Error(`YouTube API returned status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // 2. Logique de détection du direct
+        const isLive = data.items && data.items.length > 0;
+
+        let liveVideoId = null;
+        if (isLive) {
+            // Si le direct est trouvé, récupère l'ID de la vidéo
+            liveVideoId = data.items[0].id.videoId;
+        }
+
+        // 3. Mise à jour du cache et de la réponse
+        liveCache = {
+            isLive: isLive,
+            videoId: liveVideoId, // Assurez-vous que c'est bien liveVideoId ici
+            timestamp: now
+        };
+
+        // 4. Réponse
+        res.json(liveCache);
+
+    } catch (error) {
+        console.error('❌ Erreur lors de la vérification du direct YouTube:', error);
+        // En cas d'erreur API, on renvoie une réponse "hors ligne"
+        res.status(200).json({ isLive: false, error: 'API check failed' });
+    }
+});
+
 // --- ROUTES API PUBLIQUES ---
 
 // Route de connexion pour le panneau d'administration
