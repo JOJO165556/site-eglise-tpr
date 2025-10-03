@@ -271,12 +271,12 @@ app.get('/api/videos', async (req, res) => {
 
         let query = supabase.from('youtube_videos').select('*', { count: 'exact' });
 
-        // LOGIQUE DE RECHERCHE
+        // LOGIQUE DE RECHERCHE (Correction : Utilise ilike pour une recherche simple et fiable)
         if (searchQuery) {
-            query = query.textSearch('fts', searchQuery, {
-                type: 'plain',
-                config: 'french'
-            });
+            // Utilise une condition OR pour rechercher dans le titre OU la description
+            query = query.or(
+                `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`
+            );
         }
 
         // LOGIQUE DE TRI
