@@ -8,3 +8,4 @@
 
 # Configuration locale (contient le certificat CA)
 conf/
+.vercel

@@ -530,3 +530,4 @@ app.use((req, res) => res.status(404).sendFile(path.join(templatesPath, '404.htm
 
 // --- DÉMARRAGE DU SERVEUR ---
 app.listen(PORT, () => console.log(`🚀 Le serveur a démarré sur http://localhost:${PORT}`));
+//module.exports = app;

@@ -89,8 +89,7 @@ const renderCalendar = () => {
 
     monthLabel.textContent = new Date(year, month).toLocaleString('fr-fr', { month: 'long', year: 'numeric' });
 
-    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-    dayNames.forEach(day => {
+    const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']; dayNames.forEach(day => {
         const dayHeader = document.createElement('div');
         dayHeader.className = 'calendar-header';
         dayHeader.textContent = day;
