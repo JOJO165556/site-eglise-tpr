@@ -179,7 +179,9 @@ const showEventModal = (event) => {
     }
 
     modalLink.style.display = 'inline-block';
-    modal.style.display = 'block';
+    // Utilisation de Bootstrap 5 Modal
+    const bootstrapModal = bootstrap.Modal.getOrCreateInstance(modal);
+    bootstrapModal.show();
 };
 
 /**
@@ -187,7 +189,9 @@ const showEventModal = (event) => {
  */
 const hideEventModal = () => {
     const modal = document.getElementById('eventModal');
-    modal.style.display = 'none';
+    // Utilisation de Bootstrap 5 Modal
+    const bootstrapModal = bootstrap.Modal.getOrCreateInstance(modal);
+    bootstrapModal.hide();
 };
 
 /**
@@ -327,22 +331,24 @@ const endQuiz = () => {
     }
 };
 
-// --- GESTION DU CARROUSEL ---
+// --- GESTION DU CARROUSEL (CARROUSEL AUTOMATIQUE DU HAUT) ---
 
-const sliderImages = document.querySelectorAll('.slider-image');
-let currentSlide = 0;
+const setupAutoCarousel = () => {
+    const sliderImages = document.querySelectorAll('.slider-image');
+    let currentSlide = 0;
 
-const nextSlide = () => {
-    if (sliderImages.length === 0) return;
-    sliderImages[currentSlide].classList.remove('active');
-    currentSlide = (currentSlide + 1) % sliderImages.length;
-    sliderImages[currentSlide].classList.add('active');
+    const nextSlide = () => {
+        if (sliderImages.length === 0) return;
+        sliderImages[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % sliderImages.length;
+        sliderImages[currentSlide].classList.add('active');
+    };
+
+    if (sliderImages.length > 0) {
+        // Démarrage du carrousel avec intervalle UNIQUEMENT si le DOM est chargé
+        setInterval(nextSlide, 5000);
+    }
 };
-
-if (sliderImages.length > 0) {
-    // Démarrage du carrousel avec intervalle
-    setInterval(nextSlide, 5000);
-}
 
 
 // --- GESTION DE LA PENSÉE DU JOUR ---
@@ -395,20 +401,6 @@ const displayDailyQuote = async () => {
     }
 };
 
-// --- INITIALISATION DE LA PAGE ---
-document.addEventListener('DOMContentLoaded', () => {
-
-    // 4. Chargement des données via API
-    fetchJeunesseEvents();
-    fetchQuizQuestions();
-
-    // 🛑 DÉCLENCHEMENT DE LA PENSÉE DU JOUR
-    displayDailyQuote();
-
-    // 5. Vérification du contenu des affiches
-    checkAffichesContent();
-});
-
 /**
  * Vérifie si la section des affiches contient des images.
  */
@@ -441,16 +433,20 @@ const setupOffcanvasScroll = () => {
 
     if (!offcanvasElement) return;
 
+    // S'assurer que 'bootstrap' est disponible.
+    if (typeof bootstrap === 'undefined' || !bootstrap.Offcanvas) {
+         console.warn("Bootstrap 5 non détecté. Impossible d'initialiser l'Offcanvas.");
+         return;
+    }
+
     const offcanvas = new bootstrap.Offcanvas(offcanvasElement);
 
-    // MODIFICATION CLÉ : Cible TOUS les liens .nav-link, pas seulement ceux qui commencent par #
     const allOffcanvasLinks = offcanvasElement.querySelectorAll('.nav-link');
 
     allOffcanvasLinks.forEach(link => {
-        // Le lien est-il déjà un bouton 'data-bs-dismiss' ? On vérifie juste au cas où.
-        if (link.hasAttribute('data-bs-dismiss') && link.getAttribute('data-bs-dismiss') === 'offcanvas') {
-            // Si le lien a data-bs-dismiss="offcanvas", on laisse Bootstrap gérer la fermeture 
-            // et le reste du code ci-dessous gère la navigation après la fermeture.
+        // Empêche de surcharger les liens qui ont déjà une gestion de fermeture
+        if (link.hasAttribute('data-bs-dismiss')) {
+             return;
         }
 
         link.addEventListener('click', function (event) {
@@ -459,11 +455,11 @@ const setupOffcanvasScroll = () => {
             // 1. Ferme le menu Offcanvas
             offcanvas.hide();
 
-            // S'il s'agit d'un lien d'ancre (commence par #)
+            // S'il s'agit d'un lien d'ancre (commence par #) sur la page actuelle
             if (href && href.startsWith('#')) {
                 event.preventDefault(); // Empêche la navigation immédiate
 
-                // Attend la fin de l'animation pour le défilement
+                // Attendre la fin de l'animation pour le défilement
                 setTimeout(() => {
                     const targetElement = document.querySelector(href);
                     if (targetElement) {
@@ -474,18 +470,13 @@ const setupOffcanvasScroll = () => {
                     }
                 }, 350);
             }
-            // S'il s'agit d'un lien externe (href="/jeunesse_don" ou autre)
+            // S'il s'agit d'un lien vers une autre page (ex: /jeunesse_don) ou vers la page courante (/index)
             else if (href) {
-                // Pour tous les autres liens (y compris "/#home" et "/jeunesse_don"), 
-                // on laisse la navigation se faire APRES la fermeture.
-
-                // On empêche le comportement par défaut (pour éviter qu'il ne se déclenche avant la fermeture)
+                // Pour tous les autres liens, on laisse la navigation se faire APRES la fermeture.
                 event.preventDefault();
 
-                // Attend la fin de l'animation pour la navigation
+                // Attendre la fin de l'animation pour la navigation
                 setTimeout(() => {
-                    // Si le lien est '/#home', 'window.location.href' gère correctement le rechargement 
-                    // de la page et la position de l'ancre.
                     window.location.href = href;
                 }, 350);
             }
@@ -493,19 +484,25 @@ const setupOffcanvasScroll = () => {
     });
 };
 
-// --- INITIALISATION DE LA PAGE ---
+// --- INITIALISATION UNIQUE DE LA PAGE (MEILLEURE PRATIQUE) ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialisation du Quiz et de la Pensée du Jour
+
+    // --- 1. Initialisation des composants interactifs ---
+
+    // Quiz : Assurer le lien du bouton "Suivant"
     const nextQuestionBtn = document.getElementById('next-question-btn');
     if (nextQuestionBtn) {
         nextQuestionBtn.addEventListener('click', nextQuestion);
     }
 
-    // 2. Initialisation de la Modale d'Événements
+    // Modale d'Événements : Gestion de la fermeture manuelle
     const modal = document.getElementById('eventModal');
     const closeBtn = document.getElementsByClassName('close-btn')[0];
     if (closeBtn) {
+        // ATTENTION : Si vous utilisez Bootstrap Modal JS, vous n'avez pas besoin
+        // de gérer 'window.onclick' ni 'closeBtn.onclick' de cette façon.
+        // Laissons le code initial, mais sachez qu'il est redondant avec Bootstrap.
         closeBtn.onclick = hideEventModal;
     }
     window.onclick = (event) => {
@@ -514,38 +511,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- GESTION DU CARROUSEL 'Camp Des Jeunes' ---
+    // --- 2. Initialisation des carrousels Bootstrap (Affichage du compteur) ---
+
+    // Carrousel 'Camp Des Jeunes'
     const campJeunesCarousel = document.getElementById('campJeunesCarousel');
     const campJeunesCountDisplay = document.getElementById('campJeunesCompteur');
-    const totalCampJeunesSlides = 2;
+    const totalCampJeunesSlides = 2; // Référence au nombre de slides réel
 
     if (campJeunesCarousel && campJeunesCountDisplay) {
         campJeunesCarousel.addEventListener('slid.bs.carousel', function (event) {
             const currentSlideIndex = event.to + 1;
             campJeunesCountDisplay.textContent = `Image ${currentSlideIndex} sur ${totalCampJeunesSlides}`;
         });
+        // Initialiser le compteur au chargement de la page pour le premier slide (index 0)
+        campJeunesCountDisplay.textContent = `Image 1 sur ${totalCampJeunesSlides}`; 
     }
 
-    // --- GESTION DU CARROUSEL 'Séminaire JC' ---
+    // Carrousel 'Séminaire JC'
     const seminaireJcCarousel = document.getElementById('seminaireJcCarousel');
     const seminaireJcCountDisplay = document.getElementById('seminaireJcCompteur');
-    const totalSeminaireJcSlides = 16; // Assurez-vous que cela corresponde au nombre réel de slides (0 à 15)
+    const totalSeminaireJcSlides = 16; // Référence au nombre de slides réel
 
     if (seminaireJcCarousel && seminaireJcCountDisplay) {
         seminaireJcCarousel.addEventListener('slid.bs.carousel', function (event) {
             const currentSlideIndex = event.to + 1;
             seminaireJcCountDisplay.textContent = `Image ${currentSlideIndex} sur ${totalSeminaireJcSlides}`;
         });
+        // Initialiser le compteur au chargement de la page pour le premier slide (index 0)
+        seminaireJcCountDisplay.textContent = `Image 1 sur ${totalSeminaireJcSlides}`; 
     }
 
-    // 3. Gestion Offcanvas (Correction du défilement)
+    // --- 3. Initialisation des fonctionnalités et chargement des données ---
+    
+    // Carrousel Automatique (Déplacé ici pour être sûr que le DOM est prêt)
+    setupAutoCarousel();
+
+    // Gestion Offcanvas (Correction du défilement)
     setupOffcanvasScroll();
 
-    // 4. Chargement des données via API
+    // Chargement des données via API
     fetchJeunesseEvents();
     fetchQuizQuestions();
     displayDailyQuote();
-
-    // 5. Vérification du contenu des affiches (doit se faire APRES que d'autres scripts aient pu charger des affiches)
+    
+    // Vérification du contenu des affiches
     checkAffichesContent();
 });
