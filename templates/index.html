@@ -481,25 +481,26 @@
         taparev@gmail.com
       </p>
       <p class="lead">Téléphone : +228 90 05 60 26</p>
-      <form class="row g-3 justify-content-center mt-3 contact-form" id="contact-form" action="/api/contact-form"
-        method="POST">
-        <div class="col-12 col-md-6 col-lg-4">
-          <input type="text" class="form-control" name="nom" placeholder="Votre nom" required aria-label="Votre nom" />
-        </div>
-        <div class="col-12 col-md-6 col-lg-4">
-          <input type="email" class="form-control" name="email" placeholder="Votre email" required
-            aria-label="Votre email" />
-        </div>
-        <div class="col-12 col-lg-8">
-          <textarea class="form-control" name="message" rows="4" placeholder="Votre message" required
-            aria-label="Votre message"></textarea>
-        </div>
-        <div class="col-12 col-lg-8 text-center">
-          <button type="submit" class="btn btn-form-submit mt-3">
-            Envoyer
-          </button>
-        </div>
-      </form>
+      <form class="row g-3 justify-content-center mt-3 contact-form" id="contact-form" action="/api/contact-form"      
+          method="POST">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <input type="text" class="form-control" name="nom" id="nom" placeholder="Votre nom" required
+            aria-label="Votre nom" />
+                  </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <input type="email" class="form-control" name="email" id="email" placeholder="Votre email" required
+                        aria-label="Votre email" />
+                  </div>
+                <div class="col-12 col-lg-8">
+                    <textarea class="form-control" name="message" id="message" rows="4" placeholder="Votre message"
+            required             aria-label="Votre message"></textarea>
+                  </div>
+                <div class="col-12 col-lg-8 text-center">
+                    <button type="submit" class="btn btn-form-submit mt-3">
+                        Envoyer
+                      </button>
+                  </div>
+              </form>
       <div id="form-message" class="mt-3"></div>
     </section>
   </main>

@@ -381,9 +381,15 @@ const displayDailyQuote = async () => {
         const quoteReference = data.reference;
 
         if (quoteElement && quoteText) {
-            // Concatène la citation et la référence
-            quoteElement.textContent = quoteText + (quoteReference ? ` — ${quoteReference}` : '');
+            // --- LOGIQUE DE CONCATÉNATION CORRIGÉE ---
+            let finalQuote = quoteText;
 
+            // Ajoute la référence SEULEMENT si elle n'est pas déjà dans le texte
+            if (quoteReference && !quoteText.includes(quoteReference)) {
+                finalQuote += ` — ${quoteReference}`;
+            }
+
+            quoteElement.textContent = finalQuote;
             // Affiche les icônes de guillemets
             if (quoteIconLeft) quoteIconLeft.style.visibility = 'visible';
             if (quoteIconRight) quoteIconRight.style.visibility = 'visible';
@@ -435,8 +441,8 @@ const setupOffcanvasScroll = () => {
 
     // S'assurer que 'bootstrap' est disponible.
     if (typeof bootstrap === 'undefined' || !bootstrap.Offcanvas) {
-         console.warn("Bootstrap 5 non détecté. Impossible d'initialiser l'Offcanvas.");
-         return;
+        console.warn("Bootstrap 5 non détecté. Impossible d'initialiser l'Offcanvas.");
+        return;
     }
 
     const offcanvas = new bootstrap.Offcanvas(offcanvasElement);
@@ -446,7 +452,7 @@ const setupOffcanvasScroll = () => {
     allOffcanvasLinks.forEach(link => {
         // Empêche de surcharger les liens qui ont déjà une gestion de fermeture
         if (link.hasAttribute('data-bs-dismiss')) {
-             return;
+            return;
         }
 
         link.addEventListener('click', function (event) {
@@ -524,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
             campJeunesCountDisplay.textContent = `Image ${currentSlideIndex} sur ${totalCampJeunesSlides}`;
         });
         // Initialiser le compteur au chargement de la page pour le premier slide (index 0)
-        campJeunesCountDisplay.textContent = `Image 1 sur ${totalCampJeunesSlides}`; 
+        campJeunesCountDisplay.textContent = `Image 1 sur ${totalCampJeunesSlides}`;
     }
 
     // Carrousel 'Séminaire JC'
@@ -538,11 +544,11 @@ document.addEventListener('DOMContentLoaded', () => {
             seminaireJcCountDisplay.textContent = `Image ${currentSlideIndex} sur ${totalSeminaireJcSlides}`;
         });
         // Initialiser le compteur au chargement de la page pour le premier slide (index 0)
-        seminaireJcCountDisplay.textContent = `Image 1 sur ${totalSeminaireJcSlides}`; 
+        seminaireJcCountDisplay.textContent = `Image 1 sur ${totalSeminaireJcSlides}`;
     }
 
     // --- 3. Initialisation des fonctionnalités et chargement des données ---
-    
+
     // Carrousel Automatique (Déplacé ici pour être sûr que le DOM est prêt)
     setupAutoCarousel();
 
@@ -553,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchJeunesseEvents();
     fetchQuizQuestions();
     displayDailyQuote();
-    
+
     // Vérification du contenu des affiches
     checkAffichesContent();
 });

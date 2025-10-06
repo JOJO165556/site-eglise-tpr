@@ -2,14 +2,11 @@
   "name": "site-eglise-tpr",
   "version": "1.0.0",
   "description": "Serveur Express Node.js pour le déploiement Serverless sur Vercel.",
-  
-  "main": "server.js", 
-  
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  
   "keywords": [
     "vercel",
     "express",
@@ -17,26 +14,23 @@
   ],
   "author": "",
   "license": "ISC",
-  
   "dependencies": {
-    "express": "^4.19.2",
-    "dotenv": "^16.4.5",
-    "cookie-parser": "^1.4.6",
-    "jsonwebtoken": "^9.0.2",
-    "@supabase/supabase-js": "^2.43.4",
-    "node-fetch": "^2.7.0",
-    "googleapis": "^137.0.3",
-    "pg": "^8.12.0",
-    
+    "@supabase/supabase-js": "^2.58.0",
     "axios": "^1.11.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "fedapay": "^1.2.5",
+    "fs": "latest",
+    "googleapis": "^137.0.3",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^4.2.1",
+    "node-fetch": "^2.7.0",
     "nodemailer": "^7.0.6",
-    
     "path": "latest",
-    "fs": "latest"
+    "pg": "^8.12.0"
   },
-  
   "devDependencies": {
-    "vercel": "^34.2.3"
+    "vercel": "^48.2.0"
   }
 }

@@ -24,21 +24,20 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Lisez le contenu du certificat CA si le fichier existe
 const caCertPath = path.join(__dirname, 'conf', 'prod-ca-2021.crt');
 const caCert = fs.existsSync(caCertPath) ? fs.readFileSync(caCertPath).toString() : null;
+
 // Déterminez si vous êtes en environnement Vercel ou en local
 const isVercel = process.env.VERCEL_ENV === 'production';
 
 const poolConfig = {
-    // Utilise la bonne chaîne de connexion selon l'environnement
     connectionString: isVercel ? process.env.DATABASE_URL_VERCEL : process.env.DATABASE_URL,
 
-    // Configuration SSL : la logique de sécurité essentielle
+    // Essentiel quand on utilise une IP IPv4 brute ou si la résolution DNS échoue.
+    family: 4,
+
     ssl: isVercel ? {
-        // En Production (Vercel) : Sécurité maximale avec le certificat CA
         ca: caCert,
         rejectUnauthorized: true
     } : {
-        // En Local (pour l'IPv6) : Désactivation de la vérification du nom d'hôte/IP
-        // C'est ce qui vous a permis de résoudre ERR_TLS_CERT_ALTNAME_INVALID.
         rejectUnauthorized: false
     }
 };
@@ -176,46 +175,42 @@ let liveCache = { isLive: false, timestamp: 0 };
 const CACHE_DURATION_MS = 5 * 60 * 1000; // Mettre en cache pendant 5 minutes
 
 
-app.get('/api/youtube-status', async (req, res) => {
-    // Vérification du cache pour économiser le quota YouTube
-    const now = Date.now();
-    if (now - liveCache.timestamp < CACHE_DURATION_MS) {
-        return res.json(liveCache);
-    }
+// server.js (ROUTE CORRIGÉE - SIMPLE LECTURE ALÉATOIRE AVEC PG)
 
+app.get('/api/daily-quote', async (req, res) => {
+    let client;
     try {
-        const YOUTUBE_API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${YOUTUBE_CHANNEL_ID}&type=video&eventType=live&key=${YOUTUBE_API_KEY}`;
+        // 1. Emprunter une connexion du pool pg
+        client = await pool.connect();
 
-        // 1. Appel à l'API YouTube
-        const response = await fetch(YOUTUBE_API_URL);
-        if (!response.ok) {
-            throw new Error(`YouTube API returned status: ${response.status}`);
-        }
-        const data = await response.json();
+        // 2. Requête pour sélectionner une citation aléatoire
+        // ORDER BY RANDOM() est la méthode la plus simple pour la sélection aléatoire en PostgreSQL
+        const result = await client.query(
+            "SELECT quote_text, reference FROM daily_quotes ORDER BY RANDOM() LIMIT 1"
+        );
 
-        // 2. Logique de détection du direct
-        const isLive = data.items && data.items.length > 0;
+        const quoteData = result.rows[0];
 
-        let liveVideoId = null;
-        if (isLive) {
-            // Si le direct est trouvé, récupère l'ID de la vidéo
-            liveVideoId = data.items[0].id.videoId;
+        if (!quoteData) {
+            // Gérer le cas où la table est vide
+            return res.status(404).json({ error: "Aucune citation trouvée dans la base de données." });
         }
 
-        // 3. Mise à jour du cache et de la réponse
-        liveCache = {
-            isLive: isLive,
-            videoId: liveVideoId, // Assurez-vous que c'est bien liveVideoId ici
-            timestamp: now
-        };
-
-        // 4. Réponse
-        res.json(liveCache);
+        // 3. Répondre avec les données
+        res.json({
+            quote: quoteData.quote_text,
+            reference: quoteData.reference
+        });
 
     } catch (error) {
-        console.error('❌ Erreur lors de la vérification du direct YouTube:', error);
-        // En cas d'erreur API, on renvoie une réponse "hors ligne"
-        res.status(200).json({ isLive: false, error: 'API check failed' });
+        console.error('❌ DB Error fetching daily quote (SIMPLE PG SELECT):', error);
+        // Utiliser le code d'erreur 500 pour une erreur interne du serveur
+        res.status(500).json({ error: "Failed to fetch daily quote from database. Check server logs." });
+    } finally {
+        // 4. Relâcher la connexion pour qu'elle puisse être réutilisée
+        if (client) {
+            client.release();
+        }
     }
 });
 
@@ -335,8 +330,41 @@ app.get("/api/quiz-questions", async (req, res) => {
     res.json(data);
 });
 
-// --- ROUTE API DE LA PENSÉE DU JOUR (VERSION FINALE ET STABLE) ---
+// --- NOUVELLE ROUTE API DE LA PENSÉE DU JOUR (Utilise SUPABASE-JS) ---
 app.get('/api/daily-quote', async (req, res) => {
+    try {
+        const { data, error } = await supabase.rpc('get_daily_quote');
+
+        if (error) {
+            console.error('❌ Supabase RPC Error fetching daily quote:', error);
+            throw new Error(error.message);
+        }
+
+        // Supabase RPC renvoie un tableau d'objets. Nous prenons le premier élément.
+        // Si le tableau est vide (aucune citation trouvée), on gère l'erreur.
+        const quoteData = data && data.length > 0 ? data[0] : null;
+
+        if (!quoteData) {
+            return res.status(404).json({ error: "Aucune citation quotidienne trouvée." });
+        }
+
+        // L'API renvoie la donnée en mappant les noms de colonnes SQL 
+        // (quote_text) aux noms de clés client (quote).
+        res.json({
+            quote: quoteData.quote_text,
+            reference: quoteData.reference
+        });
+
+    } catch (error) {
+        console.error('❌ DB Error fetching daily quote (SUPABASE-JS LOGIC):', error);
+        // Si l'ancienne erreur 'Tenant or user not found' réapparaît, c'est que la variable 
+        // SUPABASE_KEY dans .env est incorrecte ou n'a pas les permissions.
+        res.status(500).json({ error: "Failed to fetch daily quote from database. Check server logs." });
+    }
+});
+
+// --- ROUTE API DE LA PENSÉE DU JOUR (VERSION FINALE ET STABLE) ---
+/*app.get('/api/daily-quote', async (req, res) => {
     let client;
     try {
         client = await pool.connect();
@@ -433,7 +461,7 @@ app.get('/api/daily-quote', async (req, res) => {
             client.release();
         }
     }
-});
+});*/
 
 // --- ROUTES ADMIN PROTÉGÉES ---
 

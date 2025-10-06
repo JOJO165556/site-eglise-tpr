@@ -84,7 +84,7 @@ async function fetchVideos() {
 /**
  * Affiche le lecteur YouTube et met à jour le message de statut en mode "EN DIRECT".
  */
-function displayLivePlayer(container, message, url) {
+function displayLivePlayer(container, message, url, title) { // ⬅️ NOUVEAU PARAMÈTRE: title
     if (container) {
         // Crée le div parent pour gérer le ratio
         const ratioWrapper = document.createElement('div');
@@ -92,7 +92,7 @@ function displayLivePlayer(container, message, url) {
 
         const iframe = document.createElement('iframe');
         iframe.src = url;
-        iframe.title = "Diffusion en Direct";
+        iframe.title = title || "Diffusion en Direct"; // ⬅️ UTILISATION DU TITRE
         iframe.frameBorder = 0;
         iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         iframe.allowFullscreen = true;
@@ -104,7 +104,8 @@ function displayLivePlayer(container, message, url) {
     }
 
     if (message) {
-        message.textContent = "Le direct est actif ! Joignez-vous à nous ! 🎉";
+        // ⬅️ UTILISATION DU TITRE DANS LE MESSAGE
+        message.innerHTML = `<i class="fas fa-satellite-dish me-2"></i> <strong>EN DIRECT MAINTENANT :</strong> ${title} 🎉`;
         message.classList.remove('alert-info', 'alert-warning', 'alert-danger');
         message.classList.add('alert-success'); // Vert pour le succès
         message.style.display = 'block';
@@ -142,6 +143,7 @@ const checkLiveStatus = async () => {
     // =========================================================================
     let isLive = false;
     let videoId = null;
+    let videoTitle = null; // ⬅️ NOUVELLE VARIABLE
 
     try {
         const response = await fetch('/api/youtube-status');
@@ -150,23 +152,23 @@ const checkLiveStatus = async () => {
         }
         const data = await response.json();
 
-        // Récupère les données renvoyées par le serveur (isLive et videoId)
+        // Récupère les données renvoyées par le serveur (isLive, videoId ET videoTitle)
         isLive = data.isLive;
         videoId = data.videoId;
+        videoTitle = data.videoTitle; // ⬅️ RÉCUPÉRATION DU TITRE DU DIRECT
 
     } catch (error) {
         console.error("Erreur lors de la vérification du statut YouTube:", error);
-        // En cas d'échec de l'API, restons HORS LIGNE par sécurité
         isLive = false;
     }
     // =========================================================================
 
     // 2. Logique d'affichage basée sur l'état 'isLive'
     if (isLive && videoId) {
-        // --- CAS EN DIRECT : Utilisation de l'ID Vidéo Spécifique (Plus fiable) ---
-        // Utiliser l'ID de la vidéo en direct est plus fiable que l'URL générique du canal
+        // --- CAS EN DIRECT : Utilisation de l'ID Vidéo Spécifique ---
         const specificEmbedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-        displayLivePlayer(liveContainer, statusMessage, specificEmbedUrl);
+        // ⬅️ PASSAGE DU TITRE À LA FONCTION D'AFFICHAGE
+        displayLivePlayer(liveContainer, statusMessage, specificEmbedUrl, videoTitle);
 
     } else {
         // --- CAS HORS LIGNE ou ID VIDÉO MANQUANT ---
