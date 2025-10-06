@@ -26,7 +26,7 @@ let dailyQuoteCache = {
 };
 
 // Le chemin du fichier de citations
-const QUOTES_FILE_PATH = path.join(__dirname, 'static', 'quotes.json'); 
+const QUOTES_FILE_PATH = path.join(__dirname, 'static', 'quotes.json');
 
 // Fonction utilitaire pour lire le fichier de citations
 const readQuotesFile = () => {
@@ -209,7 +209,7 @@ app.get('/api/daily-quote', (req, res) => {
         if (quotes.length === 0) {
             return res.status(404).json({ error: "Aucune citation trouvée dans le fichier local." });
         }
-        
+
         // 1. VÉRIFICATION DU CACHE QUOTIDIEN
         if (dailyQuoteCache.date === today && dailyQuoteCache.quote !== null) {
             // C'est toujours le même jour, on renvoie la citation mise en cache
@@ -217,13 +217,13 @@ app.get('/api/daily-quote', (req, res) => {
         }
 
         // 2. NOUVEAU JOUR : CALCULER LA NOUVELLE ROTATION
-        
+
         // Incrémenter l'index et boucler si on arrive à la fin du tableau
         const nextIndex = (dailyQuoteCache.index + 1) % quotes.length;
-        
+
         // Sélectionner la nouvelle citation
         const newQuote = quotes[nextIndex];
-        
+
         // Mettre à jour le cache
         dailyQuoteCache = {
             date: today,
@@ -362,6 +362,60 @@ app.get("/api/quiz-questions", async (req, res) => {
     res.json(data);
 });
 
+app.get('/api/youtube-status', async (req, res) => {
+    // Récupération des variables d'environnement
+    const API_KEY = process.env.YOUTUBE_API_KEY;
+    const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID;
+
+    // Vérification de sécurité
+    if (!API_KEY || !CHANNEL_ID) {
+        console.error("Erreur: Clés API/Channel ID YouTube manquantes dans les variables d'environnement.");
+        return res.status(500).json({ error: "Erreur de configuration du serveur. Clés manquantes." });
+    }
+
+    // 1. URL de l'API de recherche YouTube pour les flux 'live'
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&type=video&eventType=live&key=${API_KEY}`;
+
+    try {
+        // 2. Appel à l'API YouTube
+        const response = await fetch(searchUrl);
+        const data = await response.json();
+
+        // Gestion des erreurs de l'API Google (e.g., clé invalide, quota dépassé)
+        if (data.error) {
+            console.error("Erreur de l'API Google:", data.error.message);
+            // Utilise le code d'erreur Google s'il existe (e.g., 400 ou 403)
+            return res.status(data.error.code || 500).json({
+                error: `Erreur de l'API YouTube: ${data.error.message}`
+            });
+        }
+
+        // 3. Trouver le premier item en direct ('live')
+        const liveItem = data.items.find(item => item.snippet.liveBroadcastContent === 'live');
+
+        if (liveItem) {
+            // Statut: EN DIRECT
+            const videoId = liveItem.id.videoId;
+            const videoTitle = liveItem.snippet.title;
+
+            return res.status(200).json({
+                isLive: true,
+                videoId: videoId,
+                videoTitle: videoTitle
+            });
+        } else {
+            // Statut: HORS LIGNE
+            return res.status(200).json({
+                isLive: false,
+                videoId: null,
+                videoTitle: null
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'appel HTTP ou de la connexion:", error);
+        return res.status(500).json({ error: "Échec de la vérification du statut de diffusion." });
+    }
+});
 
 // --- ROUTES ADMIN PROTÉGÉES ---
 
