@@ -361,10 +361,16 @@ const displayDailyQuote = async () => {
     const quoteIconLeft = document.querySelector('.fa-quote-left');
     const quoteIconRight = document.querySelector('.fa-quote-right');
 
+    // Fonction pour masquer/afficher les icônes
+    const setIconsVisibility = (isVisible) => {
+        const visibility = isVisible ? 'visible' : 'hidden';
+        if (quoteIconLeft) quoteIconLeft.style.visibility = visibility;
+        if (quoteIconRight) quoteIconRight.style.visibility = visibility;
+    };
+
     // Réinitialise les éléments
     if (quoteElement) quoteElement.textContent = '';
-    if (quoteIconLeft) quoteIconLeft.style.visibility = 'hidden';
-    if (quoteIconRight) quoteIconRight.style.visibility = 'hidden';
+    setIconsVisibility(false); // Masque initialement les icônes
 
     try {
         const response = await fetch('/api/daily-quote');
@@ -381,7 +387,7 @@ const displayDailyQuote = async () => {
         const quoteReference = data.reference;
 
         if (quoteElement && quoteText) {
-            // --- LOGIQUE DE CONCATÉNATION CORRIGÉE ---
+            // --- LOGIQUE DE CONCATÉNATION ---
             let finalQuote = quoteText;
 
             // Ajoute la référence SEULEMENT si elle n'est pas déjà dans le texte
@@ -390,20 +396,20 @@ const displayDailyQuote = async () => {
             }
 
             quoteElement.textContent = finalQuote;
-            // Affiche les icônes de guillemets
-            if (quoteIconLeft) quoteIconLeft.style.visibility = 'visible';
-            if (quoteIconRight) quoteIconRight.style.visibility = 'visible';
+            setIconsVisibility(true); // Affiche les icônes si la citation est réussie
         }
     } catch (error) {
         console.error('Erreur lors du chargement de la pensée du jour:', error);
-
-        // --- Texte de Secours en cas d'échec API (404, 500 ou erreur réseau) ---
+        
         if (quoteElement) {
-            quoteElement.textContent = "Une pensée de secours : L'Éternel est bon ; il est un refuge au jour de la détresse ; il connaît ceux qui se confient en lui. — Nahum 1:7";
+            // Texte de secours en cas d'échec de l'API (assure la lisibilité)
+            const fallbackQuote = "L'Éternel est bon ; il est un refuge au jour de la détresse ; il connaît ceux qui se confient en lui.";
+            const fallbackReference = "Nahum 1:7";
+            
+            // Utilise la même logique de concaténation
+            quoteElement.textContent = `${fallbackQuote} — ${fallbackReference}`;
+            setIconsVisibility(true); // Affiche les icônes pour le texte de secours
         }
-        // Affiche les icônes même pour le texte de secours
-        if (quoteIconLeft) quoteIconLeft.style.visibility = 'visible';
-        if (quoteIconRight) quoteIconRight.style.visibility = 'visible';
     }
 };
 
@@ -506,9 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('eventModal');
     const closeBtn = document.getElementsByClassName('close-btn')[0];
     if (closeBtn) {
-        // ATTENTION : Si vous utilisez Bootstrap Modal JS, vous n'avez pas besoin
-        // de gérer 'window.onclick' ni 'closeBtn.onclick' de cette façon.
-        // Laissons le code initial, mais sachez qu'il est redondant avec Bootstrap.
+        // ATTENTION : Ce code est redondant avec Bootstrap Modal JS, mais on le garde.
         closeBtn.onclick = hideEventModal;
     }
     window.onclick = (event) => {
@@ -558,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Chargement des données via API
     fetchJeunesseEvents();
     fetchQuizQuestions();
-    displayDailyQuote();
+    displayDailyQuote(); // Appel de la fonction pour afficher la pensée du jour
 
     // Vérification du contenu des affiches
     checkAffichesContent();

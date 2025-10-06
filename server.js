@@ -11,10 +11,34 @@ const cron = require('node-cron');
 const { google } = require('googleapis');
 const { Pool } = require('pg');
 const fs = require('fs');
+const { Client } = require('pg'); // Nécessite d'importer la classe Client
 
 // Initialisation du serveur Express
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// --- VARIABLES GLOBALES POUR LA PENSÉE DU JOUR (FICHIER LOCAL) ---
+// Le cache mémorise la citation choisie pour le jour en cours.
+let dailyQuoteCache = {
+    date: null, // Date à laquelle la citation a été sélectionnée (YYYY-MM-DD)
+    index: -1,   // Index actuel dans le tableau des citations (pour la rotation)
+    quote: null // La citation sélectionnée
+};
+
+// Le chemin du fichier de citations
+const QUOTES_FILE_PATH = path.join(__dirname, 'static', 'quotes.json'); 
+
+// Fonction utilitaire pour lire le fichier de citations
+const readQuotesFile = () => {
+    try {
+        const data = fs.readFileSync(QUOTES_FILE_PATH, 'utf8');
+        return JSON.parse(data);
+    } catch (e) {
+        // En mode développement ou Vercel, ceci est un avertissement, pas fatal.
+        console.error("Erreur de lecture du fichier de citations. Assurez-vous que 'conf/quotes.json' existe.", e);
+        return [];
+    }
+};
 
 // Initialisation du client Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -175,44 +199,52 @@ let liveCache = { isLive: false, timestamp: 0 };
 const CACHE_DURATION_MS = 5 * 60 * 1000; // Mettre en cache pendant 5 minutes
 
 
-// server.js (ROUTE CORRIGÉE - SIMPLE LECTURE ALÉATOIRE AVEC PG)
-
-app.get('/api/daily-quote', async (req, res) => {
-    let client;
+// --- ROUTE API DE LA PENSÉE DU JOUR (VERSION FICHIER LOCAL & CACHE EN MÉMOIRE) ---
+// Cette route NE dépend plus de PostgreSQL (Pool ou Client).
+app.get('/api/daily-quote', (req, res) => {
     try {
-        // 1. Emprunter une connexion du pool pg
-        client = await pool.connect();
+        const quotes = readQuotesFile();
+        const today = new Date().toISOString().split('T')[0];
 
-        // 2. Requête pour sélectionner une citation aléatoire
-        // ORDER BY RANDOM() est la méthode la plus simple pour la sélection aléatoire en PostgreSQL
-        const result = await client.query(
-            "SELECT quote_text, reference FROM daily_quotes ORDER BY RANDOM() LIMIT 1"
-        );
-
-        const quoteData = result.rows[0];
-
-        if (!quoteData) {
-            // Gérer le cas où la table est vide
-            return res.status(404).json({ error: "Aucune citation trouvée dans la base de données." });
+        if (quotes.length === 0) {
+            return res.status(404).json({ error: "Aucune citation trouvée dans le fichier local." });
+        }
+        
+        // 1. VÉRIFICATION DU CACHE QUOTIDIEN
+        if (dailyQuoteCache.date === today && dailyQuoteCache.quote !== null) {
+            // C'est toujours le même jour, on renvoie la citation mise en cache
+            return res.status(200).json(dailyQuoteCache.quote);
         }
 
-        // 3. Répondre avec les données
-        res.json({
-            quote: quoteData.quote_text,
-            reference: quoteData.reference
-        });
+        // 2. NOUVEAU JOUR : CALCULER LA NOUVELLE ROTATION
+        
+        // Incrémenter l'index et boucler si on arrive à la fin du tableau
+        const nextIndex = (dailyQuoteCache.index + 1) % quotes.length;
+        
+        // Sélectionner la nouvelle citation
+        const newQuote = quotes[nextIndex];
+        
+        // Mettre à jour le cache
+        dailyQuoteCache = {
+            date: today,
+            index: nextIndex,
+            // S'assurer que le format de la réponse est toujours le même
+            quote: {
+                quote: newQuote.quote_text,
+                reference: newQuote.reference
+            }
+        };
+
+        // 3. Renvoyer la nouvelle citation
+        res.status(200).json(dailyQuoteCache.quote);
 
     } catch (error) {
-        console.error('❌ DB Error fetching daily quote (SIMPLE PG SELECT):', error);
-        // Utiliser le code d'erreur 500 pour une erreur interne du serveur
-        res.status(500).json({ error: "Failed to fetch daily quote from database. Check server logs." });
-    } finally {
-        // 4. Relâcher la connexion pour qu'elle puisse être réutilisée
-        if (client) {
-            client.release();
-        }
+        console.error('❌ Erreur lors de la récupération de la pensée du jour (Fichier):', error);
+        res.status(500).json({ error: "Erreur serveur lors de la récupération de la pensée du jour." });
     }
 });
+// ATTENTION : L'ancienne route `/api/daily-quote` qui générait l'erreur
+// a été remplacée par le bloc ci-dessus.
 
 // --- ROUTES API PUBLIQUES ---
 
@@ -330,138 +362,6 @@ app.get("/api/quiz-questions", async (req, res) => {
     res.json(data);
 });
 
-// --- NOUVELLE ROUTE API DE LA PENSÉE DU JOUR (Utilise SUPABASE-JS) ---
-app.get('/api/daily-quote', async (req, res) => {
-    try {
-        const { data, error } = await supabase.rpc('get_daily_quote');
-
-        if (error) {
-            console.error('❌ Supabase RPC Error fetching daily quote:', error);
-            throw new Error(error.message);
-        }
-
-        // Supabase RPC renvoie un tableau d'objets. Nous prenons le premier élément.
-        // Si le tableau est vide (aucune citation trouvée), on gère l'erreur.
-        const quoteData = data && data.length > 0 ? data[0] : null;
-
-        if (!quoteData) {
-            return res.status(404).json({ error: "Aucune citation quotidienne trouvée." });
-        }
-
-        // L'API renvoie la donnée en mappant les noms de colonnes SQL 
-        // (quote_text) aux noms de clés client (quote).
-        res.json({
-            quote: quoteData.quote_text,
-            reference: quoteData.reference
-        });
-
-    } catch (error) {
-        console.error('❌ DB Error fetching daily quote (SUPABASE-JS LOGIC):', error);
-        // Si l'ancienne erreur 'Tenant or user not found' réapparaît, c'est que la variable 
-        // SUPABASE_KEY dans .env est incorrecte ou n'a pas les permissions.
-        res.status(500).json({ error: "Failed to fetch daily quote from database. Check server logs." });
-    }
-});
-
-// --- ROUTE API DE LA PENSÉE DU JOUR (VERSION FINALE ET STABLE) ---
-/*app.get('/api/daily-quote', async (req, res) => {
-    let client;
-    try {
-        client = await pool.connect();
-        await client.query('BEGIN'); // Début de la transaction
-
-        let quoteId;
-        let quoteData;
-
-        // 1. VÉRIFIE si une citation a déjà été sélectionnée aujourd'hui
-        const configResult = await client.query(
-            "SELECT value, last_updated FROM app_config WHERE key = 'current_daily_quote_id' FOR UPDATE"
-        );
-        const configRow = configResult.rows[0];
-
-        // Vérifie si la date enregistrée est AUJOURD'HUI
-        const isNewDay = !configRow || configRow.last_updated.toISOString().split('T')[0] !== new Date().toISOString().split('T')[0];
-
-        if (isNewDay) {
-            // --- C'EST UN NOUVEAU JOUR : SÉLECTIONNER ET METTRE À JOUR LA NOUVELLE CITATION ---
-
-            // 2. Trouve la citation la moins récemment utilisée
-            const nextQuoteResult = await client.query(
-                "SELECT id, quote_text, reference FROM daily_quotes ORDER BY coalesce(last_used, '1900-01-01') ASC LIMIT 1 FOR UPDATE"
-            );
-
-            if (nextQuoteResult.rows.length === 0) {
-                await client.query('COMMIT');
-                return res.status(404).json({ error: "No quotes found in the database." });
-            }
-
-            const newQuote = nextQuoteResult.rows[0];
-            quoteId = newQuote.id;
-            quoteData = newQuote;
-
-            // 3. Met à jour la date de dernière utilisation dans daily_quotes
-            await client.query(
-                'UPDATE daily_quotes SET last_used = CURRENT_DATE WHERE id = $1',
-                [quoteId]
-            );
-
-            // 4. Met à jour la table de configuration pour "verrouiller" la citation pour 24h
-            if (configRow) {
-                // Mise à jour si la ligne existe
-                await client.query(
-                    "UPDATE app_config SET value = $1, last_updated = CURRENT_DATE WHERE key = 'current_daily_quote_id'",
-                    [quoteId]
-                );
-            } else {
-                // Insertion si la ligne n'existe pas
-                await client.query(
-                    "INSERT INTO app_config (key, value, last_updated) VALUES ('current_daily_quote_id', $1, CURRENT_DATE)",
-                    [quoteId]
-                );
-            }
-
-        } else {
-            // --- LA CITATION DU JOUR EST DÉJÀ EN CACHE : RÉCUPÉRATION RAPIDE ---
-
-            quoteId = configRow.value;
-
-            // 5. Récupère les données de la citation verrouillée
-            const currentQuoteResult = await client.query(
-                "SELECT quote_text, reference FROM daily_quotes WHERE id = $1",
-                [quoteId]
-            );
-
-            if (currentQuoteResult.rows.length === 0) {
-                // Si l'ID est invalide, force une mise à jour au prochain appel.
-                await client.query('COMMIT');
-                return res.status(404).json({ error: "Quote ID in config not found." });
-            }
-            quoteData = currentQuoteResult.rows[0];
-        }
-
-        await client.query('COMMIT'); // Fin de la transaction
-
-        // 6. Renvoie la citation.
-        res.json({
-            quote: quoteData.quote_text,
-            reference: quoteData.reference
-        });
-
-    } catch (error) {
-        // En cas d'erreur, annule les changements
-        // Ligne 375 (Hypothèse) : Vérification pour éviter l'erreur si client n'a jamais été défini
-        if (client) { // <--- AJOUTEZ CETTE VÉRIFICATION
-            // Ligne 376 (votre ligne de code) :
-            await client.query('ROLLBACK');
-        }
-        console.error('❌ DB Error fetching daily quote (24H LOGIC):', error);
-        res.status(500).json({ error: "Failed to fetch daily quote from database. Check server logs." });
-    } finally {
-        if (client) {
-            client.release();
-        }
-    }
-});*/
 
 // --- ROUTES ADMIN PROTÉGÉES ---
 
