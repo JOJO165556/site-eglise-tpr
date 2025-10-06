@@ -206,19 +206,44 @@ window.changeMonth = (direction) => {
 // --- GESTION DU QUIZ (LIMITE ET SCORE) ---
 
 /**
- * Démarre le quiz avec les questions fournies.
+ * Démarre le quiz avec les questions fournies et gère l'affichage/le masquage des conteneurs.
  * @param {Array} questions Le tableau de questions du quiz.
  */
 const startQuiz = (questions) => {
+    // Récupération des nouveaux conteneurs de structure
+    const quizContent = document.getElementById('quiz-content');
+    const quizEndMessage = document.getElementById('quiz-end-message');
+    
+    // 1. Réinitialise l'affichage pour un nouveau quiz :
+    // Masque le message de fin de partie (s'il était affiché)
+    if (quizEndMessage) {
+        quizEndMessage.style.display = 'none';
+    }
+    // Affiche le contenu principal du quiz (s'il était masqué)
+    if (quizContent) {
+        quizContent.style.display = 'block';
+    }
+
     if (questions && questions.length > 0) {
         quizQuestions = questions.slice(0, MAX_QUESTIONS);
         currentQuestionIndex = 0;
         score = 0;
-        document.getElementById('next-question-btn').style.display = 'none';
+        
+        const nextBtn = document.getElementById('next-question-btn');
+        if (nextBtn) {
+            nextBtn.style.display = 'none';
+        } else {
+            console.warn("L'élément 'next-question-btn' est introuvable pour la réinitialisation.");
+        } 
+        
+        // C'est maintenant ici que le showQuestion est appelé sans erreur !
         showQuestion();
     } else {
         console.error("Les questions du quiz n'ont pas pu être chargées.");
-        document.getElementById('quiz-container').innerHTML = "<p>Désolé, le quiz n'a pas pu être chargé.</p>";
+        // Gère l'erreur d'une manière qui ne détruit pas la structure
+        if (quizContent) {
+             quizContent.innerHTML = "<p>Désolé, le quiz n'a pas pu être chargé. Veuillez réessayer plus tard.</p>";
+        }
     }
 };
 
@@ -226,10 +251,18 @@ const startQuiz = (questions) => {
  * Affiche la question courante et met à jour la progression et le score.
  */
 const showQuestion = () => {
+    // 1. Déclaration et sécurisation des conteneurs principaux
     const questionContainer = document.getElementById('quiz-question');
     const optionsContainer = document.getElementById('quiz-options');
     const resultContainer = document.getElementById('quiz-result');
 
+    // Si les conteneurs essentiels manquent, nous arrêtons l'exécution ici pour éviter les erreurs
+    if (!questionContainer || !optionsContainer) {
+        console.error("Erreur critique : les conteneurs 'quiz-question' ou 'quiz-options' sont manquants. Vérifiez votre HTML.");
+        return;
+    }
+
+    // 2. Déclaration des éléments secondaires (sécurisés plus bas)
     const scoreElement = document.getElementById('quiz-score');
     const progressElement = document.getElementById('quiz-progress');
 
@@ -239,8 +272,14 @@ const showQuestion = () => {
         return;
     }
 
-    scoreElement.textContent = `Score: ${score}`;
-
+    // 3. CORRECTION : Sécuriser l'accès à scoreElement (ligne précédente d'erreur)
+    if (scoreElement) {
+        scoreElement.textContent = `Score: ${score}`;
+    } else {
+        console.warn("L'élément 'quiz-score' est introuvable. Le score ne sera pas affiché.");
+    }
+    
+    // 4. Gestion de la progression (avec vérification existante)
     const currentProgress = currentQuestionIndex + 1;
     const progressPercent = (currentProgress / MAX_QUESTIONS) * 100;
 
@@ -250,9 +289,14 @@ const showQuestion = () => {
         progressElement.textContent = `${currentProgress} / ${MAX_QUESTIONS}`;
     }
 
+    // 5. Mise à jour des conteneurs principaux (qui sont garantis d'exister par le check initial)
     questionContainer.textContent = currentQuestion.question;
     optionsContainer.innerHTML = '';
-    resultContainer.textContent = '';
+    
+    // Sécuriser également l'accès à resultContainer avant de l'utiliser
+    if (resultContainer) {
+        resultContainer.textContent = '';
+    }
 
     currentQuestion.options.forEach(option => {
         const button = document.createElement('button');
@@ -318,16 +362,24 @@ const nextQuestion = () => {
  * Affiche le résultat final du quiz.
  */
 const endQuiz = () => {
-    const quizContainer = document.getElementById('quiz-container');
+    const quizContent = document.getElementById('quiz-content');
+    const quizEndMessage = document.getElementById('quiz-end-message');
     const finalMessage = `Quiz terminé ! Votre score final est de ${score} sur ${MAX_QUESTIONS} ! ✨`;
 
-    if (quizContainer) {
-        quizContainer.innerHTML = `
+    // 1. Affiche le message de fin dans son conteneur dédié
+    if (quizEndMessage) {
+        quizEndMessage.innerHTML = `
             <h3>Résultats du Quiz</h3>
             <p class="h4 text-center mt-4">${finalMessage}</p>
             <p class="text-center mt-3">Merci d'avoir participé !</p>
             <button class="btn btn-primary mt-3" onclick="fetchQuizQuestions()">Recommencer le Quiz</button> 
             `;
+        quizEndMessage.style.display = 'block';
+    }
+
+    // 2. Masque l'intégralité du contenu du quiz pour la fin de la partie
+    if (quizContent) {
+        quizContent.style.display = 'none';
     }
 };
 
@@ -400,12 +452,12 @@ const displayDailyQuote = async () => {
         }
     } catch (error) {
         console.error('Erreur lors du chargement de la pensée du jour:', error);
-        
+
         if (quoteElement) {
             // Texte de secours en cas d'échec de l'API (assure la lisibilité)
             const fallbackQuote = "L'Éternel est bon ; il est un refuge au jour de la détresse ; il connaît ceux qui se confient en lui.";
             const fallbackReference = "Nahum 1:7";
-            
+
             // Utilise la même logique de concaténation
             quoteElement.textContent = `${fallbackQuote} — ${fallbackReference}`;
             setIconsVisibility(true); // Affiche les icônes pour le texte de secours
