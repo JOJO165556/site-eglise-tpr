@@ -357,16 +357,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Événement pour le tri
+    // Événement pour le tri (CORRECTION À VÉRIFIER)
     const sortSelect = document.getElementById("video-sort-select");
     if (sortSelect) {
         sortSelect.addEventListener("change", () => {
+            // ASSUREZ-VOUS D'UTILISER LA VARIABLE GLOBALE CORRECTE
             currentSortOrder = sortSelect.value;
             currentPage = 1;
             fetchVideos();
         });
     }
-
+    
     // Événements pour les boutons de pagination
     const prevPageBtn = document.getElementById("prevPageBtnHome");
     const nextPageBtn = document.getElementById("nextPageBtnHome");
