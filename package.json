@@ -19,7 +19,7 @@
     "axios": "^1.11.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": "^4.22.1",
     "fedapay": "^1.2.5",
     "fs": "latest",
     "googleapis": "^137.0.3",
