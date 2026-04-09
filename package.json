@@ -43,6 +43,7 @@
     "smol-toml": "^1.6.1",
     "ajv": "^8.17.1",
     "srvx": "^0.11.15",
-    "minimatch": "^10.2.5"
+    "minimatch": "^10.2.5",
+    "@tootallnate/once": "^3.0.1"
   }
 }
