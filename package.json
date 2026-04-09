@@ -16,10 +16,10 @@
   "license": "ISC",
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",
-    "axios": "^1.11.0",
+    "axios": "^1.15.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
-    "express": "^4.22.1",
+    "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "fedapay": "^1.2.5",
     "fs": "latest",
@@ -28,11 +28,21 @@
     "lusca": "^1.7.0",
     "node-cron": "^4.2.1",
     "node-fetch": "^2.7.0",
-    "nodemailer": "^7.0.6",
+    "nodemailer": "^8.0.5",
     "path": "latest",
     "pg": "^8.12.0"
   },
   "devDependencies": {
-    "vercel": "^48.2.0"
+    "vercel": "^50.41.0"
+  },
+  "overrides": {
+    "axios": "^1.15.0",
+    "path-to-regexp": "^8.4.2",
+    "undici": "^6.24.0",
+    "tar": "^7.5.13",
+    "smol-toml": "^1.6.1",
+    "ajv": "^8.17.1",
+    "srvx": "^0.11.15",
+    "minimatch": "^10.2.5"
   }
 }
