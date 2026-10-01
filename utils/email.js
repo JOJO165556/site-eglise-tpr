@@ -1,13 +1,13 @@
-const nodemailer = require("nodemailer");
-require("dotenv").config();
+import nodemailer from "nodemailer";
+import "dotenv/config";
 
 // Ajout du paramètre 'message'
-async function envoyerRecu(email, nom, montant, message) {
+export async function envoyerRecu(email, nom, montant, message) {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
             user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS, 
+            pass: process.env.EMAIL_PASS,
         },
     });
 
@@ -19,9 +19,9 @@ async function envoyerRecu(email, nom, montant, message) {
         html: `
             <h1>Merci pour votre don, ${nom}!</h1>
             <p>Nous avons bien reçu votre don de <strong>${montant} XOF</strong>.</p>
-            
+
             ${message ? `<p><strong>Votre message :</strong><br/>${message}</p>` : ""}
-            
+
             <p>Que Dieu vous bénisse.</p>
             <p>L'équipe de l'église TPR</p>
         `,
@@ -30,5 +30,3 @@ async function envoyerRecu(email, nom, montant, message) {
     await transporter.sendMail(mailOptions);
     console.log(`✅ Reçu envoyé à ${email}`);
 }
-
-module.exports = { envoyerRecu };

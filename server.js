@@ -1,22 +1,21 @@
 // --- RATE LIMIT ---
-const rateLimit = require("express-rate-limit");
-const { ipKeyGenerator } = require("express-rate-limit");
+import rateLimit from "express-rate-limit";
+import { ipKeyGenerator } from "express-rate-limit";
 
 // --- ENV ---
-require("dotenv").config();
+import "dotenv/config";
 
 // --- MODULES ---
-const express = require("express");
-const path = require("path");
-const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
-const fetch = require("node-fetch");
-const { createClient } = require("@supabase/supabase-js");
-const fetchForm = require("node-fetch");
-const cron = require("node-cron");
-const { google } = require("googleapis");
-const { Pool } = require("pg");
-const fs = require("fs");
+import express from "express";
+import path from "path";
+import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
+import { createClient } from "@supabase/supabase-js";
+import cron from "node-cron";
+import { google } from "googleapis";
+import { Pool } from "pg";
+import fs from "fs";
+import { envoyerRecu } from "./utils/email.js";
 
 // --- INIT ---
 const app = express();
@@ -54,12 +53,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // --- SUPABASE ---
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY,
-  {
-    global: {
-      fetch: fetch,
-    },
-  }
+  process.env.SUPABASE_KEY
 );
 
 
@@ -204,7 +198,7 @@ app.post("/api/login", authLimiter, (req, res) => {
 
 app.post("/api/contact-form", authLimiter, async (req, res) => {
   try {
-    const r = await fetchForm(process.env.FORMSPREE_URL, {
+    const r = await fetch(process.env.FORMSPREE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req.body),
