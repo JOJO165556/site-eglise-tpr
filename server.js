@@ -8,6 +8,7 @@ import "dotenv/config";
 // --- MODULES ---
 import express from "express";
 import path from "path";
+import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import { createClient } from "@supabase/supabase-js";
@@ -15,7 +16,10 @@ import cron from "node-cron";
 import { google } from "googleapis";
 import { Pool } from "pg";
 import fs from "fs";
-import { envoyerRecu } from "./utils/email.js";
+
+// --- ES MODULES EQUIVALENTS ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // --- INIT ---
 const app = express();

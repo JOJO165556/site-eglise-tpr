@@ -9,6 +9,9 @@ export async function envoyerRecu(email, nom, montant, message) {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
         },
+        // Sécurités nodemailer v10
+        disableFileAccess: true,
+        disableUrlAccess: true,
     });
 
     const mailOptions = {
